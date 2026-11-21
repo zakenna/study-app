@@ -10,10 +10,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState, type ComponentType } from "react";
+import { useEffect, useRef, useState, type ComponentType } from "react";
+import Eaves from "./App.Eaves";
 import Onboarding from "./App.Onboarding";
+import SeasonPicker from "./App.SeasonPicker";
 import { calcStudyStreak, daysUntil } from "./lib/date";
-import { saveProfile } from "./lib/storage";
+import { saveProfile, saveSeason } from "./lib/storage";
 import { useStudyData } from "./lib/useStudyData";
 import DashboardPage from "./pages/DashboardPage";
 import ExamPage from "./pages/ExamPage";
@@ -22,7 +24,7 @@ import QuizPage from "./pages/QuizPage";
 import TimelinePage from "./pages/TimelinePage";
 import TipsPage from "./pages/TipsPage";
 import WrongNotePage from "./pages/WrongNotePage";
-import type { NavIntent, PageProps, Profile, TabId } from "./types";
+import type { NavIntent, PageProps, Profile, Season, TabId } from "./types";
 
 interface Tab {
   id: TabId;
@@ -79,15 +81,33 @@ function BackgroundGlow() {
       aria-hidden
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
     >
-      <div className="absolute -top-40 -left-32 size-[28rem] rounded-full bg-primary/20 blur-3xl" />
-      <div className="absolute top-1/3 -right-40 size-[26rem] rounded-full bg-accent/15 blur-3xl" />
+      <div className="absolute -top-40 -left-32 size-[28rem] rounded-full bg-accent/10 blur-3xl" />
+      <div className="absolute top-1/3 -right-40 size-[26rem] rounded-full bg-success/10 blur-3xl" />
       <div className="absolute -bottom-48 left-1/4 size-[24rem] rounded-full bg-primary/10 blur-3xl" />
     </div>
   );
 }
 
 function App() {
-  const { profile: storedProfile, logs } = useStudyData();
+  const { profile: storedProfile, logs, season } = useStudyData();
+  const transitionTimer = useRef<number | undefined>(undefined);
+
+  // 저장된 계절을 <html data-season>에 반영 (첫 화면은 index.html 스크립트가 미리 적용)
+  useEffect(() => {
+    document.documentElement.setAttribute("data-season", season);
+  }, [season]);
+
+  const changeSeason = (next: Season) => {
+    if (next === season) return;
+    const root = document.documentElement;
+    root.classList.add("season-transition"); // 화면 전체 색이 부드럽게 바뀌도록 잠깐만
+    window.clearTimeout(transitionTimer.current);
+    transitionTimer.current = window.setTimeout(
+      () => root.classList.remove("season-transition"),
+      700,
+    );
+    saveSeason(next);
+  };
   // 저장이 막힌 환경(시크릿 모드 등)에서도 이번 방문 동안은 입력한 프로필로 동작하도록 보관
   const [unsavedProfile, setUnsavedProfile] = useState<Profile | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
@@ -153,7 +173,7 @@ function App() {
       </aside>
 
       <div className="md:pl-60">
-        <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-line bg-canvas/70 px-4 py-3 backdrop-blur-xl md:px-8">
+        <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-line bg-canvas/80 px-4 py-3 backdrop-blur-xl md:px-8">
           <div className="min-w-0 flex-1">
             {profile ? (
               <Greeting profile={profile} streak={streak} />
@@ -161,6 +181,7 @@ function App() {
               <p className="text-sm text-muted">환영해요!</p>
             )}
           </div>
+          <SeasonPicker season={season} onChange={changeSeason} />
           {profile && (
             <button
               type="button"
@@ -171,6 +192,7 @@ function App() {
               <Settings size={18} aria-hidden />
             </button>
           )}
+          <Eaves />
         </header>
 
         <main className="mx-auto max-w-3xl px-4 pt-6 pb-28 md:px-8 md:pb-10">

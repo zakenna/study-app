@@ -88,3 +88,6 @@ export interface PageProps {
   /** 이 탭으로 올 때 함께 넘어온 의도 (한 번 쓰고 나면 다음 이동 때 사라짐) */
   intent?: NavIntent;
 }
+
+/** 🏯 한옥 테마 계절 (기본: 봄) */
+export type Season = "spring" | "summer" | "autumn" | "winter";

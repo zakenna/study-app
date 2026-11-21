@@ -11,7 +11,7 @@ function GlassCard({ className = "", children, ...rest }: GlassCardProps) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className={`rounded-2xl border border-line bg-surface p-5 shadow-lg shadow-black/20 backdrop-blur-xl ${className}`}
+      className={`hanji rounded-2xl border border-line bg-surface p-5 shadow-lg shadow-black/10 backdrop-blur-xl ${className}`}
       {...rest}
     >
       {children}

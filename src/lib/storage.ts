@@ -1,7 +1,13 @@
 // localStorage 읽기/쓰기 (docs/GUIDELINE.md 2장, 3-2, 3-4) — 🔒 팀장 소유.
 // localStorage는 반드시 이 파일을 통해서만 접근한다.
 // 시크릿 모드·저장 공간 부족·깨진 JSON에서도 앱이 멈추지 않도록 모든 접근을 try/catch로 감싼다.
-import type { Profile, QuestionStat, StudyLog, TipVote } from "../types";
+import type {
+  Profile,
+  QuestionStat,
+  Season,
+  StudyLog,
+  TipVote,
+} from "../types";
 import { calcStudyStreak, toDateKey } from "./date";
 import { INITIAL_STRENGTH, updateStrength } from "./memory";
 
@@ -13,6 +19,7 @@ export const STORAGE_KEYS = {
   timelineBest: "studyapp:timelineBest",
   matchBest: "studyapp:matchBest",
   examResults: "studyapp:examResults",
+  season: "studyapp:season",
 } as const;
 
 /**
@@ -295,4 +302,18 @@ export function clearExamDraft(): void {
   } catch {
     // 무시
   }
+}
+
+/* ---------- 🏯 계절 테마 (3-4) ---------- */
+
+export const SEASONS: Season[] = ["spring", "summer", "autumn", "winter"];
+
+export function getSeason(): Season {
+  const season = read<Season>(STORAGE_KEYS.season, "spring");
+  return SEASONS.includes(season) ? season : "spring";
+}
+
+export function saveSeason(season: Season): void {
+  write(STORAGE_KEYS.season, season);
+  notifyChange();
 }

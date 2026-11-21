@@ -141,6 +141,7 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 | `studyapp:timelineBest` | `number` (타임라인 순서 맞추기 연속 성공 최고 기록) |
 | `studyapp:examResults` | `ExamResult[]` (기출 OMR 회차별 응시 기록: 점수·급수·답안·걸린 시간) |
 | `studyapp:examDraft` (sessionStorage) | 기출 OMR 응시 중 임시 저장 `{ examId, answers, remaining, savedAt }` — 브라우저 탭을 닫으면 사라짐, 제출·그만두기 때 삭제 |
+| `studyapp:season` | `"spring" | "summer" | "autumn" | "winter"` (🏯 계절 테마, 기본 봄) |
 | `studyapp:matchBest` | `Record<쌍 수, 초>` (인물 매칭 쌍 수별 최단 시간, 예: `{ "4": 21 }`) |
 
 다른 키도 `studyapp:` 접두어를 쓰고, 팀장이 `storage.ts`에서 정의한다.
@@ -210,7 +211,9 @@ src/
 │   ├── TimelinePage.tsx
 │   └── MatchPage.tsx
 ├── App.tsx             🔒       레이아웃, 탭, 헤더
-└── App.Onboarding.tsx  🔒       첫 방문 온보딩 / 프로필 수정 모달
+├── App.Onboarding.tsx  🔒       첫 방문 온보딩 / 프로필 수정 모달
+├── App.SeasonPicker.tsx 🔒      계절 테마 선택기 (🌸🌿🍁❄️)
+└── App.Eaves.tsx       🔒       헤더 아래 기와 처마선 장식
 ```
 
 | 작업 단위 | 브랜치 예시 | 내용 |
@@ -238,14 +241,27 @@ PR 생성·병합과 배포는 팀장이 한다.
 
 ## 6. 디자인 규칙
 
-- 🎨 **색상 팔레트는 팀장이 확정 후 공지 예정.** 그 전까지는 아래 원칙만 지킨다.
+- 🏯 **계절별 한옥 테마** — 컨셉 "한옥 문을 열고 역사 속으로". `<html data-season="spring|summer|autumn|winter">`에 따라 테마 변수 값이 바뀐다 (기본 봄, 선택은 `studyapp:season`). 값은 `src/index.css`에만 있다.
+
+  | 계절 | 바탕(canvas) | 글자(ink) | primary | accent | 느낌 |
+  |---|---|---|---|---|---|
+  | 🌸 봄 (기본) | `#f3ead8` 한지 베이지 | `#2a2420` 먹 | `#3f4b5e` 기와 먹회색 | `#b03a66` 벚꽃 분홍 | success `#3f6e22` 연두 |
+  | 🌿 여름 | `#e6efec` | `#16252e` | `#1d4a86` 쪽빛 | `#a83a6e` 연꽃 분홍 | success `#245f36` 짙은 녹음 |
+  | 🍁 가을 | `#f2e4cc` 따뜻한 베이지 | `#2b1e14` | `#a8401a` 단풍 주홍 | `#8a5200` 감빛·황금 | success `#4f6419` |
+  | ❄️ 겨울 (어두운 테마) | `#11141b` 먹색 밤 | `#eef1f6` 설백 | `#7cc59c` 소나무 초록 | `#f28aa9` 홍매 | |
+
+- **가독성:** 모든 계절에서 글자로 쓰는 색(ink·muted·primary·accent·success·danger)은 canvas·paper 대비 **4.5:1 이상**, 버튼 글자(canvas 색을 primary·danger·accent 위에)도 4.5:1 이상. 색을 바꾸면 대비를 다시 검증한다.
+- **장식은 SVG/CSS로 직접 그린다.** 사진·외부 이미지 금지 (한지 질감 `hanji` 유틸리티, 기와 처마선 `App.Eaves.tsx`).
 - 색상 값(`#1e293b` 같은 hex)을 컴포넌트에 **직접 쓰지 않는다.** 반드시 테마 변수(Tailwind 테마 토큰 / CSS 변수)를 사용한다. 팔레트가 바뀌면 한 곳만 고치면 되도록.
-- 테마 변수 이름 (값은 뼈대에서 임시 쿨톤으로 정하고, 팔레트 확정 시 값만 바꾼다):
+- 테마 변수 이름:
 
   | 변수 | 용도 | Tailwind 예시 |
   |---|---|---|
   | `--color-canvas` | 화면 배경 (밝은 버튼의 글자색으로도 사용) | `bg-canvas`, `text-canvas` |
-  | `--color-surface` | 카드·패널 배경 | `bg-surface` |
+  | `--color-surface` | 카드·패널 배경 (반투명 한지) | `bg-surface` |
+  | `--color-paper` | 불투명 한지 바탕 (팝오버 등) | `bg-paper` |
+  | `--color-roof` | 기와 장식 | `text-roof` |
+  | `--color-wood` | 문살·나무 | `text-wood` |
   | `--color-line` | 테두리 | `border-line` |
   | `--color-ink` | 기본 글자 | `text-ink` |
   | `--color-muted` | 보조 글자 | `text-muted` |
@@ -255,7 +271,7 @@ PR 생성·병합과 배포는 팀장이 한다.
   | `--color-danger` | 오답 | `text-danger` |
 
 - 카드, 버튼, 배지는 `components/ui` 부품을 사용해서 통일감을 유지한다.
-- 폰트: Pretendard. `index.html`에서 jsDelivr CDN으로 불러온다 (뼈대에서 적용).
+- 폰트 (무료 OFL만): 본문 Pretendard(jsDelivr CDN), 제목(h1~h3) **Gowun Batang**(Google Fonts CDN, `--font-title`). 둘 다 `index.html`에서 불러온다.
 - **모바일 우선.** 375px 폭에서 깨지지 않아야 한다.
 - 애니메이션은 짧고 부드럽게(0.2~0.4초). 정답 시 가벼운 축하 효과, 오답 시 흔들림 정도.
 
