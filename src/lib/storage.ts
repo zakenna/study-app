@@ -20,6 +20,7 @@ export const STORAGE_KEYS = {
   matchBest: "studyapp:matchBest",
   examResults: "studyapp:examResults",
   season: "studyapp:season",
+  effectsOff: "studyapp:effectsOff",
 } as const;
 
 /**
@@ -315,5 +316,16 @@ export function getSeason(): Season {
 
 export function saveSeason(season: Season): void {
   write(STORAGE_KEYS.season, season);
+  notifyChange();
+}
+
+/* ---------- 🏯 배경 효과 끄기 (3-4) ---------- */
+
+export function getEffectsOff(): boolean {
+  return read<boolean>(STORAGE_KEYS.effectsOff, false) === true;
+}
+
+export function saveEffectsOff(off: boolean): void {
+  write(STORAGE_KEYS.effectsOff, off);
   notifyChange();
 }

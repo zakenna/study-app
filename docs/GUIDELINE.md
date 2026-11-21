@@ -142,6 +142,7 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 | `studyapp:examResults` | `ExamResult[]` (기출 OMR 회차별 응시 기록: 점수·급수·답안·걸린 시간) |
 | `studyapp:examDraft` (sessionStorage) | 기출 OMR 응시 중 임시 저장 `{ examId, answers, remaining, savedAt }` — 브라우저 탭을 닫으면 사라짐, 제출·그만두기 때 삭제 |
 | `studyapp:season` | `"spring" | "summer" | "autumn" | "winter"` (🏯 계절 테마, 기본 봄) |
+| `studyapp:effectsOff` | `boolean` (⚙️ 배경 효과 끄기, 기본 false) |
 | `studyapp:matchBest` | `Record<쌍 수, 초>` (인물 매칭 쌍 수별 최단 시간, 예: `{ "4": 21 }`) |
 
 다른 키도 `studyapp:` 접두어를 쓰고, 팀장이 `storage.ts`에서 정의한다.
@@ -214,7 +215,8 @@ src/
 ├── App.Onboarding.tsx  🔒       첫 방문 온보딩 / 프로필 수정 모달
 ├── App.SeasonPicker.tsx 🔒      계절 테마 선택기 (🌸🌿🍁❄️)
 ├── App.Eaves.tsx       🔒       헤더 아래 기와 처마선 장식
-└── App.Intro.tsx       🔒       한옥 문 소개 화면 (앱을 열 때 한 번, 봄 테마 고정)
+├── App.Intro.tsx       🔒       한옥 문 소개 화면 (앱을 열 때 한 번, 봄 테마 고정)
+└── App.SeasonEffects.tsx 🔒     계절별 배경 효과 (≤25개, pointer-events 없음, 탭 숨김 시 정지)
 ```
 
 | 작업 단위 | 브랜치 예시 | 내용 |
@@ -252,6 +254,7 @@ PR 생성·병합과 배포는 팀장이 한다.
   | ❄️ 겨울 (어두운 테마) | `#11141b` 먹색 밤 | `#eef1f6` 설백 | `#7cc59c` 소나무 초록 | `#f28aa9` 홍매 | |
 
 - **가독성:** 모든 계절에서 글자로 쓰는 색(ink·muted·primary·accent·success·danger)은 canvas·paper 대비 **4.5:1 이상**, 버튼 글자(canvas 색을 primary·danger·accent 위에)도 4.5:1 이상. 색을 바꾸면 대비를 다시 검증한다.
+- **배경 효과**(봄 벚꽃잎·여름 반딧불·가을 단풍잎·겨울 눈송이)는 동시에 25개 이하, 클릭을 막지 않고, 탭이 안 보이면 멈추고, 동작 줄이기 설정이면 끈다. ⚙️에서 끌 수 있다.
 - **장식은 SVG/CSS로 직접 그린다.** 사진·외부 이미지 금지 (한지 질감 `hanji` 유틸리티, 기와 처마선 `App.Eaves.tsx`).
 - 색상 값(`#1e293b` 같은 hex)을 컴포넌트에 **직접 쓰지 않는다.** 반드시 테마 변수(Tailwind 테마 토큰 / CSS 변수)를 사용한다. 팔레트가 바뀌면 한 곳만 고치면 되도록.
 - 테마 변수 이름:

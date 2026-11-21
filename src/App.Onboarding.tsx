@@ -11,6 +11,9 @@ interface OnboardingProps {
   onSave: (profile: Profile) => void;
   /** 넘기면 닫기 버튼과 Esc 닫기가 생긴다 (첫 방문에는 닫을 수 없음) */
   onClose?: () => void;
+  /** 배경 효과 끄기 (수정 모드에서만 표시, 바로 저장됨) */
+  effectsOff?: boolean;
+  onToggleEffects?: (off: boolean) => void;
 }
 
 const LEVELS: { value: Profile["level"]; label: string }[] = [
@@ -22,7 +25,13 @@ const INPUT_CLASS =
   "w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-ink placeholder:text-muted focus:border-primary focus:outline-none";
 
 /** 첫 방문 온보딩 / 프로필 수정 모달 */
-function Onboarding({ initialProfile, onSave, onClose }: OnboardingProps) {
+function Onboarding({
+  initialProfile,
+  onSave,
+  onClose,
+  effectsOff = false,
+  onToggleEffects,
+}: OnboardingProps) {
   const titleId = useId();
   const [name, setName] = useState(initialProfile?.name ?? "");
   const [examDate, setExamDate] = useState(initialProfile?.examDate ?? "");
@@ -160,6 +169,24 @@ function Onboarding({ initialProfile, onSave, onClose }: OnboardingProps) {
             onChange={(e) => setDailyGoal(e.target.value)}
           />
         </label>
+
+        {initialProfile && onToggleEffects && (
+          <label className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface px-3 py-2.5">
+            <span>
+              <span className="block text-sm font-medium">배경 효과 끄기</span>
+              <span className="block text-xs text-muted">
+                계절별 꽃잎·반딧불·단풍·눈 효과를 멈춰요
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={effectsOff}
+              onChange={(e) => onToggleEffects(e.target.checked)}
+              className="size-5 accent-primary"
+            />
+          </label>
+        )}
 
         {error && (
           <p role="alert" className="text-sm text-danger">

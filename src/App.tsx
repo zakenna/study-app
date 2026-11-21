@@ -14,9 +14,10 @@ import { useEffect, useRef, useState, type ComponentType } from "react";
 import Eaves from "./App.Eaves";
 import Intro from "./App.Intro";
 import Onboarding from "./App.Onboarding";
+import SeasonEffects from "./App.SeasonEffects";
 import SeasonPicker from "./App.SeasonPicker";
 import { calcStudyStreak, daysUntil } from "./lib/date";
-import { saveProfile, saveSeason } from "./lib/storage";
+import { saveEffectsOff, saveProfile, saveSeason } from "./lib/storage";
 import { useStudyData } from "./lib/useStudyData";
 import DashboardPage from "./pages/DashboardPage";
 import ExamPage from "./pages/ExamPage";
@@ -90,7 +91,7 @@ function BackgroundGlow() {
 }
 
 function App() {
-  const { profile: storedProfile, logs, season } = useStudyData();
+  const { profile: storedProfile, logs, season, effectsOff } = useStudyData();
   const transitionTimer = useRef<number | undefined>(undefined);
 
   // 저장된 계절을 <html data-season>에 반영 (첫 화면은 index.html 스크립트가 미리 적용)
@@ -137,6 +138,7 @@ function App() {
   return (
     <div className="relative isolate min-h-svh">
       <BackgroundGlow />
+      <SeasonEffects season={season} enabled={!effectsOff} />
 
       {/* 데스크톱 사이드바 */}
       <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col gap-1 border-r border-line bg-canvas/60 p-4 backdrop-blur-xl md:flex">
@@ -248,6 +250,8 @@ function App() {
             initialProfile={profile}
             onSave={handleSaveProfile}
             onClose={profile ? () => setIsEditingProfile(false) : undefined}
+            effectsOff={effectsOff}
+            onToggleEffects={saveEffectsOff}
           />
         )}
       </AnimatePresence>
