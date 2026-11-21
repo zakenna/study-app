@@ -33,6 +33,7 @@ npm run dev      # http://localhost:5173
 | `npm run dev -- --host` | 같은 와이파이의 폰에서 접속 |
 | `npm run lint` | 코드 규칙 검사 |
 | `npm run build` | 배포용 빌드 (에러 확인용) |
+| `npm run format` | Prettier로 코드 정렬 (큰따옴표 + 세미콜론) |
 
 ---
 
@@ -111,7 +112,7 @@ git push origin feature/기능이름
 - 변수와 함수 이름은 **camelCase** (`userName`)
 - `any` 타입 사용 금지
 - 공용 타입은 `src/types/`에서 import해서 사용 (각자 새로 만들지 않기)
-- 저장 시 Prettier 자동 정렬 사용
+- 코드 정렬은 Prettier 기본값(큰따옴표 + 세미콜론). 저장 시 자동 정렬을 켜거나, 커밋 전 `npm run format` 실행
 
 ### 📥 패키지 추가
 `npm install 새패키지`는 **팀장에게 먼저 물어본 뒤** 진행한다. 여러 명이 동시에 바꾸면 `package.json`이 충돌한다.
