@@ -3,7 +3,7 @@
 > **"틀리는 순간, 외우는 법까지 알려주는 한국사 앱"**
 > 한국사능력검정시험을 준비하는 대학생을 위한 개인 맞춤 학습 웹앱
 
-이 문서는 팀원과 모든 Claude Code가 **작업 전에 반드시 읽는** 기준 문서다.
+이 문서는 개발자(팀장)와 모든 Claude Code가 **작업 전에 반드시 읽는** 기준 문서다.
 README.md(Git 규칙)와 함께 따른다. 내용이 충돌하면 이 문서를 우선한다.
 
 ---
@@ -19,7 +19,7 @@ README.md(Git 규칙)와 함께 따른다. 내용이 충돌하면 이 문서를 
 | 대시보드 | 시험 D-day, 오늘 푼 문제 수, 시대별 정답률, 🔥 연속 학습일 |
 | 온보딩 | 첫 방문 시 이름, 시험 날짜, 목표 급수(심화/기본), 하루 목표 문제 수 입력 |
 
-### ✨ 와우 기능: 필수가 끝난 사람부터
+### ✨ 와우 기능: 필수가 끝난 뒤
 | 기능 | 설명 |
 |---|---|
 | 타임라인 순서 맞추기 | 사건 카드 4~5장을 연도 순으로 드래그해서 정렬 |
@@ -100,6 +100,9 @@ export interface TipVote  { tipId: string; count: number } // 👍 "외워졌어
 
 타입이 더 필요하면 **직접 추가하지 말고 팀장에게 요청**한다.
 
+- **연도(`year`)는 기원전이면 음수**로 적는다 (예: 고조선 멸망 `-108`).
+  화면에 표시할 때는 `lib/labels.ts`의 `formatYear(year)`를 쓴다 → `-108` → "기원전 108년", `1592` → "1592년"
+
 ### 3-1. 시대 경계
 문제·꿀팁·타임라인의 `era`는 아래 기준으로 분류한다.
 
@@ -120,7 +123,7 @@ export interface TipVote  { tipId: string; count: number } // 👍 "외워졌어
 - `strength` 초깃값은 **1**(일). 정답이면 **×2.5**, 오답이면 **1로 리셋**.
 - 기억 확률 = `Math.exp(-경과일 / strength)`. 경과일 = `(Date.now() - lastReviewedAt) / 86_400_000`
 - 팀장이 뼈대에서 `retention`(기억 확률), `updateStrength`(풀이 후 strength 갱신),
-  `getWeakQuestions`(약한 문제 뽑기)를 구현한다. C는 가져다 쓰고, 수정이 필요하면 팀장에게 요청한다.
+  `getWeakQuestions`(약한 문제 뽑기)를 구현한다. 화면에서는 가져다 쓰고, 수정이 필요하면 팀장 승인 후 고친다.
 
 ### 3-4. localStorage 키
 | 키 | 값 |
@@ -157,54 +160,59 @@ export interface TipVote  { tipId: string; count: number } // 👍 "외워졌어
 | 종류 | 예시 |
 |---|---|
 | 숫자 말장난 | 1592 임진왜란: "일(1)본군이 오(5)자, 구(9)국의 영웅 이(2)순신!" |
-| 숫자 말장난 | 1919 3·1 운동: "일어나 구하자! 일어나 구하자!(1919)" |
+| 숫자 말장난 | 1919 3·1 운동: "일(1)어나 구(9)하자! 일(1)어나 구(9)하자!" |
 | 두문자 | 조선 왕 순서: "태정태세문단세 예성연중인명선…" |
 
 ---
 
-## 5. 폴더 구조와 담당
+## 5. 폴더 구조와 작업 단위
+
+> 1인 개발 체제: 팀장 혼자 Claude Code와 함께 진행한다. 🔒 표시는 "수정 전 팀장 승인이 필요한 공용 파일"이라는 뜻이다.
 
 ```
 src/
-├── types/              🔒 팀장
+├── types/              🔒
 ├── lib/
-│   ├── storage.ts      🔒 팀장   localStorage 읽기/쓰기 전부 (쓰면 "studyapp:change" 이벤트)
-│   ├── useStudyData.ts 🔒 팀장   저장 데이터 구독 훅 — 화면은 이걸로 읽는다 (3-5)
-│   ├── memory.ts       🔒 팀장   망각곡선 계산 (retention, updateStrength, getWeakQuestions)
-│   ├── date.ts         🔒 팀장   날짜 키(YYYY-MM-DD), D-day, 연속 학습일
-│   ├── labels.ts       🔒 팀장   ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS
-│   └── quiz.ts            A      문제 뽑기·채점 로직
-├── components/ui/      🔒 팀장   GlassCard, Button, Badge, ProgressBar, TipCard 등 공용 부품
-├── data/                  D      문제·꿀팁(tips.ts)·타임라인·인물 데이터
+│   ├── storage.ts      🔒       localStorage 읽기/쓰기 전부 (쓰면 "studyapp:change" 이벤트)
+│   ├── useStudyData.ts 🔒       저장 데이터 구독 훅 — 화면은 이걸로 읽는다 (3-5)
+│   ├── memory.ts       🔒       망각곡선 계산 (retention, updateStrength, getWeakQuestions)
+│   ├── date.ts         🔒       날짜 키(YYYY-MM-DD), D-day, 연속 학습일
+│   ├── labels.ts       🔒       ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS, formatYear
+│   └── quiz.ts                   문제 뽑기·채점 로직
+├── components/ui/      🔒       GlassCard, Button, Badge, ProgressBar, TipCard 등 공용 부품
+├── data/                         문제·꿀팁(tips.ts)·타임라인·인물 데이터
 │   └── questions/
-│       ├── <era>.ts       D      시대별 문제
-│       └── index.ts       D      시대별 문제를 하나로 합침 (새 시대 파일을 만들면 여기에 추가)
+│       ├── <era>.ts              시대별 문제
+│       └── index.ts              시대별 문제를 하나로 합침 (새 시대 파일을 만들면 여기에 추가)
 ├── pages/
-│   ├── DashboardPage.tsx  D
-│   ├── QuizPage.tsx       A
-│   ├── WrongNotePage.tsx  C
-│   ├── TipsPage.tsx       C
-│   ├── TimelinePage.tsx   B
-│   └── MatchPage.tsx      B
-├── App.tsx             🔒 팀장   레이아웃, 탭, 헤더
-└── App.Onboarding.tsx  🔒 팀장   첫 방문 온보딩 / 프로필 수정 모달
+│   ├── DashboardPage.tsx
+│   ├── QuizPage.tsx
+│   ├── WrongNotePage.tsx
+│   ├── TipsPage.tsx
+│   ├── TimelinePage.tsx
+│   └── MatchPage.tsx
+├── App.tsx             🔒       레이아웃, 탭, 헤더
+└── App.Onboarding.tsx  🔒       첫 방문 온보딩 / 프로필 수정 모달
 ```
 
-| 담당 | 브랜치 예시 | 맡는 것 |
+| 작업 단위 | 브랜치 예시 | 내용 |
 |---|---|---|
-| 팀장 | `feature/skeleton` | 뼈대, 디자인 시스템, 공용 타입·저장, 배포, PR 병합 |
-| A | `feature/quiz` | 시대별 퀴즈, 채점, 해설, 💡 꿀팁 카드 표시(`TipCard` 사용) |
-| B | `feature/timeline`, `feature/match` | 타임라인 순서 맞추기, 인물↔사건 매칭 |
-| C | `feature/wrong-note`, `feature/tips` | 오답노트, 망각곡선 복습, 꿀팁 모음 |
-| D | `feature/data`, `feature/dashboard` | 콘텐츠 데이터, 대시보드 |
+| 뼈대 | `feature/skeleton` | 디자인 시스템, 공용 타입·저장, 레이아웃 (완료) |
+| 데이터 | `feature/data` | 문제·꿀팁·타임라인·인물 데이터 |
+| 퀴즈 | `feature/quiz` | 시대별 퀴즈, 채점, 해설, 💡 꿀팁 카드 표시(`TipCard` 사용) |
+| 오답노트·꿀팁 | `feature/wrong-note`, `feature/tips` | 오답노트, 망각곡선 복습, 꿀팁 모음 |
+| 대시보드 | `feature/dashboard` | D-day, 오늘 학습량, 시대별 정답률, 연속 학습일 |
+| 와우 기능 | `feature/timeline`, `feature/match` | 타임라인 순서 맞추기, 인물↔사건 매칭 |
+
+PR 생성·병합과 배포는 팀장이 한다.
 
 ### 작업 순서
 1. **팀장 뼈대(`feature/skeleton`)가 다른 작업보다 먼저 병합된다.**
    뼈대 범위: 패키지 설치, 테마 변수, 공용 타입, `lib/`(storage·useStudyData·memory·date·labels), `components/ui`(TipCard 포함), `App.tsx`(탭·헤더)·`App.Onboarding.tsx`
-2. 뼈대 병합 후 A~D가 각자 브랜치에서 작업을 시작한다.
+2. 뼈대 병합 후 위 작업 단위별로 브랜치를 만들어 하나씩 진행한다.
 
 ### 규칙
-- 자기 담당 파일만 수정한다. 🔒 파일이 필요하면 단톡방에서 팀장에게 요청.
+- 지시받은 작업 범위의 파일만 수정한다. 🔒 파일은 수정하기 전에 팀장 승인을 받는다.
 - 공용 부품은 새로 만들지 말고 `components/ui`를 가져다 쓴다. 꿀팁 카드는 어느 화면이든 `components/ui/TipCard.tsx`를 쓴다.
 - 페이지 내부에서만 쓰는 컴포넌트는 같은 폴더에 `QuizPage.ResultSummary.tsx`처럼 이름 앞에 페이지명을 붙인다.
 
@@ -241,7 +249,7 @@ src/
 - [ ] 브라우저 콘솔에 에러 없음
 - [ ] 모바일 폭(375px)에서 확인
 - [ ] localStorage를 비운 상태(첫 방문)에서도 동작
-- [ ] 내 담당 파일만 수정
+- [ ] 작업 범위 밖의 파일을 수정하지 않음 (🔒 파일은 승인받음)
 - [ ] 새 콘텐츠가 있다면 "검증 필요 항목"을 PR 설명에 적음
 
 ---
@@ -250,9 +258,9 @@ src/
 
 ```
 main 최신화 → 내 브랜치 → 작업 → lint/build → commit → push
-→ GitHub에서 PR → 팀장 승인·병합 → 모두 git pull
+→ GitHub에서 PR → 팀장 승인·병합 → git pull
 ```
 
 - PR은 **작게, 자주.** 기능 하나 = PR 하나
 - Claude Code는 PR을 만들지 않는다. push 후 작업 보고까지만
-- 병합되면 단톡방에 공지, 모두 `git pull origin main`
+- 병합되면 `git pull origin main`으로 로컬 main을 최신화한다

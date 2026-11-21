@@ -2,7 +2,7 @@ import { ListTodo } from "lucide-react";
 import Badge from "../components/ui/Badge";
 import GlassCard from "../components/ui/GlassCard";
 
-// 담당: D — 뼈대 단계의 자리 표시용 화면. 아래 TODO를 구현하면서 자유롭게 바꾼다.
+// 뼈대 단계의 자리 표시용 화면. 아래 TODO를 구현하면서 자유롭게 바꾼다.
 const TODOS = [
   "시험 D-day 카드 (Profile.examDate, lib/date의 daysUntil)",
   "오늘 푼 문제 수 / 하루 목표 (getTodayLog, Profile.dailyGoal, ProgressBar)",
@@ -15,7 +15,7 @@ function DashboardPage() {
     <GlassCard>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-bold">대시보드</h2>
-        <Badge tone="primary">담당: D</Badge>
+        <Badge tone="primary">준비 중</Badge>
       </div>
       <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-muted">
         <ListTodo size={16} aria-hidden />

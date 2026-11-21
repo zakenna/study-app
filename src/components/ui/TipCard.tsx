@@ -1,6 +1,6 @@
 import { Lightbulb, ThumbsUp } from "lucide-react";
 import { motion } from "motion/react";
-import { ERA_LABELS, TIP_KIND_LABELS } from "../../lib/labels";
+import { ERA_LABELS, formatYear, TIP_KIND_LABELS } from "../../lib/labels";
 import type { Tip } from "../../types";
 import Badge from "./Badge";
 
@@ -32,7 +32,7 @@ function TipCard({ tip, votes, onVote, className = "" }: TipCardProps) {
         <Badge tone="accent">{TIP_KIND_LABELS[tip.kind]}</Badge>
         <Badge>
           {ERA_LABELS[tip.era]}
-          {tip.year !== undefined && ` · ${tip.year}`}
+          {tip.year !== undefined && ` · ${formatYear(tip.year)}`}
         </Badge>
       </div>
 
