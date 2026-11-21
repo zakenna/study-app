@@ -16,7 +16,7 @@ const TONE_CLASSES: Record<BadgeTone, string> = {
   muted: "border-line bg-surface text-muted",
 };
 
-/** 작은 라벨 (시대, 담당자, 꿀팁 종류 등) */
+/** 작은 라벨 (시대, 상태, 꿀팁 종류 등) */
 function Badge({ tone = "muted", className = "", children }: BadgeProps) {
   return (
     <span

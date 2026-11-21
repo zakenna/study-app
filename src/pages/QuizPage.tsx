@@ -2,7 +2,7 @@ import { ListTodo } from "lucide-react";
 import Badge from "../components/ui/Badge";
 import GlassCard from "../components/ui/GlassCard";
 
-// 담당: A — 뼈대 단계의 자리 표시용 화면. 아래 TODO를 구현하면서 자유롭게 바꾼다.
+// 뼈대 단계의 자리 표시용 화면. 아래 TODO를 구현하면서 자유롭게 바꾼다.
 const TODOS = [
   "시대 선택 (lib/labels의 ERAS, ERA_LABELS)",
   "문제 뽑기·채점 로직 (lib/quiz.ts)",
@@ -17,7 +17,7 @@ function QuizPage() {
     <GlassCard>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-bold">시대별 퀴즈</h2>
-        <Badge tone="primary">담당: A</Badge>
+        <Badge tone="primary">준비 중</Badge>
       </div>
       <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-muted">
         <ListTodo size={16} aria-hidden />

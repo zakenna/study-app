@@ -1,6 +1,6 @@
 # 📚 studyApp — 틀리는 순간, 외우는 법까지 알려주는 한국사 자격증 앱
 
-> ⚠️ **개발 전 [docs/GUIDELINE.md](docs/GUIDELINE.md) 필독.** 기능 범위, 데이터 구조, 콘텐츠·디자인 규칙, 담당 배정이 정리되어 있으며 README와 충돌하면 GUIDELINE을 우선한다.
+> ⚠️ **개발 전 [docs/GUIDELINE.md](docs/GUIDELINE.md) 필독.** 기능 범위, 데이터 구조, 콘텐츠·디자인 규칙, 작업 단위가 정리되어 있으며 README와 충돌하면 GUIDELINE을 우선한다.
 
 ## 팀 소개
 
@@ -37,11 +37,11 @@ npm run dev      # http://localhost:5173
 
 ---
 
-## 2. 폴더 구조와 담당
+## 2. 폴더 구조와 작업 단위
 
-폴더 구조, 🔒 파일, 담당 배정은 **[docs/GUIDELINE.md 5장](docs/GUIDELINE.md#5-폴더-구조와-담당)**을 참고한다. (`src/main.tsx`는 수정 금지)
+폴더 구조, 🔒 파일, 작업 단위는 **[docs/GUIDELINE.md 5장](docs/GUIDELINE.md#5-폴더-구조와-작업-단위)**을 참고한다. (`src/main.tsx`는 수정 금지)
 
-> **원칙: 내 담당 파일만 수정한다.** 다른 사람 파일이나 🔒 파일을 고쳐야 하면 단톡방에서 먼저 말한다.
+> **원칙: 작업 범위의 파일만 수정한다.** 🔒 파일을 고쳐야 하면 먼저 팀장 승인을 받는다.
 
 ---
 
@@ -132,4 +132,4 @@ git commit -m "fix: main 병합 충돌 해결"
 git push origin feature/내브랜치
 ```
 
-혼자 해결이 어려우면 단톡방에 **터미널 메시지를 통째로** 올린다.
+해결이 어려우면 **터미널 메시지를 통째로** 복사해 Claude에게 보여 준다.
