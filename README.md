@@ -1,4 +1,6 @@
-# 📚 studyApp — 스터디 웹앱 (주제 미정)
+# 📚 studyApp — 틀리는 순간, 외우는 법까지 알려주는 한국사 자격증 앱
+
+> ⚠️ **개발 전 [docs/GUIDELINE.md](docs/GUIDELINE.md) 필독.** 기능 범위, 데이터 구조, 콘텐츠·디자인 규칙, 담당 배정이 정리되어 있으며 README와 충돌하면 GUIDELINE을 우선한다.
 
 ## 팀 소개
 

@@ -1,3 +1,5 @@
+@docs/GUIDELINE.md
+
 # CLAUDE.md — Claude Code 작업 지침
 
 이 프로젝트의 개발 규칙은 README.md에 있다. 모든 작업에서 반드시 따른다.
