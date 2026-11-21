@@ -1,42 +1,30 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --accent: #aa3bff;
+@import "tailwindcss";
 
-  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
+/*
+ * 테마 변수 (docs/GUIDELINE.md 6장)
+ * 색상 값은 이 파일에만 쓴다. 컴포넌트에서는 bg-primary, text-muted처럼 토큰으로만 사용.
+ * 지금 값은 임시 쿨톤이며, 팔레트가 확정되면 여기 값만 바꾼다.
+ */
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, system-ui, sans-serif;
 
-  font: 18px/145% var(--sans);
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --color-base: #0a1022; /* 화면 배경: 짙은 네이비 */
+  --color-surface: rgb(148 163 184 / 0.08); /* 카드·패널: 반투명 유리 */
+  --color-line: rgb(148 163 184 / 0.18); /* 테두리 */
+  --color-ink: #e2e8f0; /* 기본 글자 */
+  --color-muted: #94a3b8; /* 보조 글자 */
+  --color-primary: #38bdf8; /* 주요 버튼·강조: sky */
+  --color-accent: #a78bfa; /* 꿀팁 등 포인트: violet */
+  --color-success: #34d399; /* 정답 */
+  --color-danger: #f87171; /* 오답 */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --accent: #c084fc;
+@layer base {
+  html {
+    color-scheme: dark;
   }
-}
 
-body {
-  margin: 0;
-}
-
-#root {
-  max-width: 1126px;
-  margin: 0 auto;
-  text-align: center;
-  min-height: 100svh;
-}
-
-h1 {
-  color: var(--text-h);
-  font-weight: 500;
+  body {
+    @apply min-h-svh bg-base font-sans text-ink antialiased;
+  }
 }
