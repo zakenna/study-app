@@ -60,7 +60,7 @@ export type Era =
   | "contemporary";  // 현대
 
 export interface Tip {
-  id: string;
+  id: string;          // "tip-joseon-late-001" (tip-<era>-번호 3자리)
   era: Era;
   year?: number;       // 관련 연도 (숫자 말장난이면 필수로 적는다)
   text: string;        // "일(1)본군이 오(5)자, 구(9)국의 영웅 이(2)순신!"
@@ -106,7 +106,7 @@ export interface TipVote  { tipId: string; count: number } // 👍 "외워졌어
 | Era | 범위 |
 |---|---|
 | `joseon-early` | 1392 조선 건국 ~ 임진왜란 전 |
-| `joseon-late` | 1592 임진왜란 ~ 1863 |
+| `joseon-late` | 1592 임진왜란 ~ 1863 흥선대원군 집권 전 |
 | `modern` | 1863 흥선대원군 집권 ~ 1910 (대한제국 포함) |
 | `colonial` | 1910 ~ 1945.8.15 |
 | `contemporary` | 1945 광복 이후 (광복 ~ 정부 수립 포함) |
@@ -200,10 +200,10 @@ src/
 
   | 변수 | 용도 | Tailwind 예시 |
   |---|---|---|
-  | `--color-bg` | 화면 배경 | `bg-bg` |
+  | `--color-base` | 화면 배경 | `bg-base` |
   | `--color-surface` | 카드·패널 배경 | `bg-surface` |
-  | `--color-border` | 테두리 | `border-border` |
-  | `--color-text` | 기본 글자 | `text-text` |
+  | `--color-line` | 테두리 | `border-line` |
+  | `--color-ink` | 기본 글자 | `text-ink` |
   | `--color-muted` | 보조 글자 | `text-muted` |
   | `--color-primary` | 주요 버튼·강조 | `bg-primary` |
   | `--color-accent` | 꿀팁 등 포인트 | `text-accent` |
