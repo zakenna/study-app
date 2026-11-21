@@ -1,4 +1,6 @@
-# 📚 studyApp — 스터디 웹앱 (주제 미정)
+# 📚 studyApp — 틀리는 순간, 외우는 법까지 알려주는 한국사 자격증 앱
+
+> ⚠️ **개발 전 [docs/GUIDELINE.md](docs/GUIDELINE.md) 필독.** 기능 범위, 데이터 구조, 콘텐츠·디자인 규칙, 담당 배정이 정리되어 있으며 README와 충돌하면 GUIDELINE을 우선한다.
 
 ## 팀 소개
 
@@ -31,30 +33,13 @@ npm run dev      # http://localhost:5173
 | `npm run dev -- --host` | 같은 와이파이의 폰에서 접속 |
 | `npm run lint` | 코드 규칙 검사 |
 | `npm run build` | 배포용 빌드 (에러 확인용) |
+| `npm run format` | Prettier로 코드 정렬 (큰따옴표 + 세미콜론) |
 
 ---
 
-## 2. 폴더 구조
+## 2. 폴더 구조와 담당
 
-```
-src/
-├── types/        ← 공용 타입                      🔒 팀장 승인 필요
-├── data/         ← 앱에서 쓰는 데이터
-├── components/   ← 여러 화면에서 쓰는 공용 부품
-├── pages/        ← 화면 단위 컴포넌트 (1인 1페이지)
-├── App.tsx       ← 페이지 연결(라우팅)              🔒 팀장만 수정
-└── main.tsx      ← 앱 시작점                        🔒 수정 금지
-```
-
-### 담당 파일
-
-| 담당 | 브랜치 예시 | 파일 |
-|---|---|---|
-| 팀장 | `feature/setup` | `App.tsx`, `types/`, 설정 파일, PR 리뷰·병합 |
-| 팀원 A | 주제 확정 후 배정 | 주제 확정 후 배정 |
-| 팀원 B | 주제 확정 후 배정 | 주제 확정 후 배정 |
-| 팀원 C | 주제 확정 후 배정 | 주제 확정 후 배정 |
-| 팀원 D | 주제 확정 후 배정 | 주제 확정 후 배정 |
+폴더 구조, 🔒 파일, 담당 배정은 **[docs/GUIDELINE.md 5장](docs/GUIDELINE.md#5-폴더-구조와-담당)**을 참고한다. (`src/main.tsx`는 수정 금지)
 
 > **원칙: 내 담당 파일만 수정한다.** 다른 사람 파일이나 🔒 파일을 고쳐야 하면 단톡방에서 먼저 말한다.
 
@@ -127,7 +112,7 @@ git push origin feature/기능이름
 - 변수와 함수 이름은 **camelCase** (`userName`)
 - `any` 타입 사용 금지
 - 공용 타입은 `src/types/`에서 import해서 사용 (각자 새로 만들지 않기)
-- 저장 시 Prettier 자동 정렬 사용
+- 코드 정렬은 Prettier 기본값(큰따옴표 + 세미콜론). 저장 시 자동 정렬을 켜거나, 커밋 전 `npm run format` 실행
 
 ### 📥 패키지 추가
 `npm install 새패키지`는 **팀장에게 먼저 물어본 뒤** 진행한다. 여러 명이 동시에 바꾸면 `package.json`이 충돌한다.
