@@ -135,7 +135,7 @@ function WrongNoteList({ onStart, onGoQuiz }: WrongNoteListProps) {
             <div
               role="group"
               aria-label="시대 필터"
-              className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1"
+              className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               <FilterChip
                 active={activeEra === "all"}
