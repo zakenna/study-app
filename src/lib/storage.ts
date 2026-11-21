@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   stats: "studyapp:stats",
   studyLogs: "studyapp:studyLogs",
   tipVotes: "studyapp:tipVotes",
+  timelineBest: "studyapp:timelineBest",
 } as const;
 
 /**
@@ -188,4 +189,20 @@ export function toggleTipMemorized(tipId: string): boolean {
   );
   notifyChange();
   return !wasMemorized;
+}
+
+/* ---------- 타임라인 순서 맞추기 최고 기록 (3-4) ---------- */
+
+/** 연속 성공 라운드 최고 기록 (없으면 0) */
+export function getTimelineBest(): number {
+  const best = read<number>(STORAGE_KEYS.timelineBest, 0);
+  return Number.isFinite(best) && best > 0 ? Math.floor(best) : 0;
+}
+
+/** 지금 연속 기록이 최고 기록보다 높으면 저장하고 true를 돌려준다 */
+export function saveTimelineBest(streak: number): boolean {
+  if (streak <= getTimelineBest()) return false;
+  write(STORAGE_KEYS.timelineBest, streak);
+  notifyChange();
+  return true;
 }

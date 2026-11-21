@@ -135,6 +135,7 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 | `studyapp:stats` | `Record<questionId, QuestionStat>` |
 | `studyapp:studyLogs` | `StudyLog[]` |
 | `studyapp:tipVotes` | `TipVote[]` |
+| `studyapp:timelineBest` | `number` (타임라인 순서 맞추기 연속 성공 최고 기록) |
 
 다른 키도 `studyapp:` 접두어를 쓰고, 팀장이 `storage.ts`에서 정의한다.
 
