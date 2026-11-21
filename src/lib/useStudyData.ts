@@ -1,9 +1,15 @@
 // 저장 데이터 구독 훅 — 🔒 팀장 소유.
 // 화면(컴포넌트)은 저장 데이터를 이 훅으로 읽는다. storage.ts의 쓰기 함수가 호출되면
 // "studyapp:change" 이벤트가 발생하고, 이 훅을 쓰는 모든 화면이 즉시 다시 그려진다.
-// 쓰기는 지금처럼 storage.ts 함수(recordAnswer, saveProfile, toggleTipMemorized, saveTimelineBest, saveMatchBest, saveExamResult)를 직접 호출한다.
+// 쓰기는 지금처럼 storage.ts 함수(recordAnswer, saveProfile, toggleTipMemorized, saveTimelineBest, saveMatchBest, saveExamResult, saveSeason, saveEffectsOff)를 직접 호출한다.
 import { useEffect, useState } from "react";
-import type { Profile, QuestionStat, StudyLog, TipVote } from "../types";
+import type {
+  Profile,
+  QuestionStat,
+  Season,
+  StudyLog,
+  TipVote,
+} from "../types";
 import type { ExamResult } from "./storage";
 import {
   STORAGE_KEYS,
@@ -13,6 +19,8 @@ import {
   getStudyLogs,
   getExamResults,
   getMatchBest,
+  getSeason,
+  getEffectsOff,
   getTimelineBest,
   getTipVotes,
 } from "./storage";
@@ -25,6 +33,8 @@ export interface StudyData {
   timelineBest: number; // 타임라인 순서 맞추기 연속 성공 최고 기록
   matchBest: Record<string, number>; // 인물 매칭 쌍 수별 최단 시간(초)
   examResults: ExamResult[]; // 기출 OMR 응시 기록
+  season: Season; // 🏯 계절 테마
+  effectsOff: boolean; // 배경 효과 끄기
 }
 
 function readStudyData(): StudyData {
@@ -36,6 +46,8 @@ function readStudyData(): StudyData {
     timelineBest: getTimelineBest(),
     matchBest: getMatchBest(),
     examResults: getExamResults(),
+    season: getSeason(),
+    effectsOff: getEffectsOff(),
   };
 }
 

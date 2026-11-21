@@ -1,33 +1,311 @@
 @import "tailwindcss";
 
 /*
- * 테마 변수 (docs/GUIDELINE.md 6장)
+ * 테마 변수 (docs/GUIDELINE.md 6장) — 🏯 계절별 한옥 테마
  * 색상 값은 이 파일에만 쓴다. 컴포넌트에서는 bg-primary, text-muted처럼 토큰으로만 사용.
- * 지금 값은 임시 쿨톤이며, 팔레트가 확정되면 여기 값만 바꾼다.
+ * <html data-season="spring|summer|autumn|winter">에 따라 값이 바뀐다. 기본은 봄.
+ * 모든 계절에서 글자색(ink·muted·primary·accent·success·danger)은 배경(canvas·paper) 대비 4.5:1 이상.
  */
 @theme {
   --font-sans: "Pretendard Variable", Pretendard, system-ui, sans-serif;
+  --font-title: "Gowun Batang", "Pretendard Variable", serif;
 
-  --color-canvas: #0a1022; /* 화면 배경: 짙은 네이비 */
-  --color-surface: rgb(148 163 184 / 0.08); /* 카드·패널: 반투명 유리 */
-  --color-line: rgb(148 163 184 / 0.18); /* 테두리 */
-  --color-ink: #e2e8f0; /* 기본 글자 */
-  --color-muted: #94a3b8; /* 보조 글자 */
-  --color-primary: #38bdf8; /* 주요 버튼·강조: sky */
-  --color-accent: #a78bfa; /* 꿀팁 등 포인트: violet */
-  --color-success: #34d399; /* 정답 */
-  --color-danger: #f87171; /* 오답 */
+  /* 🌸 봄 (기본): 한지 베이지 · 기와 먹회색 · 벚꽃 분홍 · 연두 */
+  --color-canvas: #f3ead8; /* 화면 배경: 한지 베이지 */
+  --color-paper: #fbf6ea; /* 카드 바탕: 밝은 한지 */
+  --color-surface: rgb(251 246 234 / 0.82); /* 카드·패널: 반투명 한지 */
+  --color-line: #d8c8aa; /* 테두리 */
+  --color-ink: #2a2420; /* 기본 글자: 먹 */
+  --color-muted: #655949; /* 보조 글자 */
+  --color-primary: #3f4b5e; /* 주요 버튼·강조: 기와 먹회색 */
+  --color-accent: #b03a66; /* 꿀팁 등 포인트: 벚꽃 분홍 */
+  --color-success: #3f6e22; /* 정답: 연두(진하게) */
+  --color-danger: #b02a22; /* 오답 */
+  --color-roof: #4a4f57; /* 기와 장식 */
+  --color-wood: #7a4e2d; /* 문살·나무 */
+}
+
+[data-season="spring"] {
+  --color-canvas: #f3ead8;
+  --color-paper: #fbf6ea;
+  --color-surface: rgb(251 246 234 / 0.82);
+  --color-line: #d8c8aa;
+  --color-ink: #2a2420;
+  --color-muted: #655949;
+  --color-primary: #3f4b5e;
+  --color-accent: #b03a66;
+  --color-success: #3f6e22;
+  --color-danger: #b02a22;
+  --color-roof: #4a4f57;
+  --color-wood: #7a4e2d;
+  color-scheme: light;
+}
+
+/* 🌿 여름: 쪽빛 · 청록 · 연꽃 분홍 · 짙은 녹음 */
+[data-season="summer"] {
+  --color-canvas: #e6efec;
+  --color-paper: #f5faf8;
+  --color-surface: rgb(245 250 248 / 0.82);
+  --color-line: #bcd2cd;
+  --color-ink: #16252e;
+  --color-muted: #46606b;
+  --color-primary: #1d4a86;
+  --color-accent: #a83a6e;
+  --color-success: #245f36;
+  --color-danger: #a8231c;
+  --color-roof: #2f4a55;
+  --color-wood: #5b4a36;
+  color-scheme: light;
+}
+
+/* 🍁 가을: 단풍 주홍 · 황금 들녘 · 감빛 · 따뜻한 베이지 */
+[data-season="autumn"] {
+  --color-canvas: #f2e4cc;
+  --color-paper: #fbf2e1;
+  --color-surface: rgb(251 242 225 / 0.82);
+  --color-line: #d9bf98;
+  --color-ink: #2b1e14;
+  --color-muted: #6a523c;
+  --color-primary: #a8401a;
+  --color-accent: #8a5200;
+  --color-success: #4f6419;
+  --color-danger: #9c1418;
+  --color-roof: #4b3d33;
+  --color-wood: #80461f;
+  color-scheme: light;
+}
+
+/* ❄️ 겨울 (어두운 테마): 먹색 밤 · 설백 · 소나무 초록 · 홍매 */
+[data-season="winter"] {
+  --color-canvas: #11141b;
+  --color-paper: #1a1e28;
+  --color-surface: rgb(26 30 40 / 0.82);
+  --color-line: #313849;
+  --color-ink: #eef1f6;
+  --color-muted: #a9b2c1;
+  --color-primary: #7cc59c;
+  --color-accent: #f28aa9;
+  --color-success: #86d6a2;
+  --color-danger: #ff8f86;
+  --color-roof: #c9d0db;
+  --color-wood: #8a6a4f;
+  color-scheme: dark;
+}
+
+/*
+ * 한지 질감 (CSS만): 아주 옅은 섬유 결 + 티끌. 배경색은 따로(bg-surface 등) 주고 질감만 얹는다.
+ */
+@utility hanji {
+  background-image:
+    radial-gradient(
+      circle at 20% 30%,
+      color-mix(in oklab, var(--color-wood) 9%, transparent) 0 1px,
+      transparent 1.6px
+    ),
+    radial-gradient(
+      circle at 70% 75%,
+      color-mix(in oklab, var(--color-ink) 6%, transparent) 0 0.8px,
+      transparent 1.4px
+    ),
+    repeating-linear-gradient(
+      104deg,
+      color-mix(in oklab, var(--color-wood) 3%, transparent) 0 1px,
+      transparent 1px 9px
+    ),
+    repeating-linear-gradient(
+      13deg,
+      color-mix(in oklab, var(--color-ink) 2%, transparent) 0 1px,
+      transparent 1px 13px
+    );
+  background-size:
+    23px 23px,
+    37px 37px,
+    auto,
+    auto;
 }
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
-    @apply min-h-svh bg-canvas font-sans text-ink antialiased;
+    @apply hanji min-h-svh bg-canvas font-sans text-ink antialiased;
     /* 한국어가 단어 중간에서 끊기지 않도록 어절 단위로 줄바꿈 */
     word-break: keep-all;
     overflow-wrap: anywhere;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-title);
+  }
+}
+
+/* 계절을 바꿀 때만 잠깐 붙는 클래스: 화면 전체 색이 부드럽게 바뀐다 */
+.season-transition,
+.season-transition * {
+  transition:
+    background-color 0.6s ease,
+    border-color 0.6s ease,
+    color 0.6s ease,
+    fill 0.6s ease,
+    stroke 0.6s ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .season-transition,
+  .season-transition * {
+    transition: none !important;
+  }
+}
+
+/* ---------- 🏯 계절별 배경 효과 (App.SeasonEffects.tsx) ---------- */
+.fx-fall {
+  position: absolute;
+  top: -8vh;
+  animation-name: fx-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+/* 봄: 벚꽃잎 */
+.fx-petal {
+  display: block;
+  width: calc(var(--s) * 12px);
+  height: calc(var(--s) * 9px);
+  border-radius: 70% 0 70% 0;
+  background: color-mix(in oklab, var(--color-accent) 40%, var(--color-paper));
+  opacity: 0.85;
+  animation: fx-sway ease-in-out infinite alternate;
+}
+
+/* 가을: 단풍잎 */
+.fx-leaf {
+  display: block;
+  width: calc(var(--s) * 16px);
+  height: calc(var(--s) * 16px);
+  background: color-mix(
+    in oklab,
+    var(--color-primary) 75%,
+    var(--color-accent)
+  );
+  clip-path: polygon(
+    50% 0%,
+    58% 22%,
+    78% 12%,
+    72% 36%,
+    100% 34%,
+    80% 52%,
+    92% 64%,
+    64% 64%,
+    56% 86%,
+    52% 72%,
+    52% 100%,
+    48% 100%,
+    48% 72%,
+    44% 86%,
+    36% 64%,
+    8% 64%,
+    20% 52%,
+    0% 34%,
+    28% 36%,
+    22% 12%,
+    42% 22%
+  );
+  opacity: 0.8;
+  animation: fx-tumble ease-in-out infinite alternate;
+}
+
+/* 겨울: 눈송이 */
+.fx-snow {
+  display: block;
+  width: calc(var(--s) * 6px);
+  height: calc(var(--s) * 6px);
+  border-radius: 50%;
+  background: var(--color-ink);
+  box-shadow: 0 0 6px color-mix(in oklab, var(--color-ink) 60%, transparent);
+  opacity: 0.75;
+  animation: fx-drift ease-in-out infinite alternate;
+}
+
+/* 여름: 반딧불 */
+.fx-firefly {
+  position: absolute;
+  width: calc(var(--s) * 5px);
+  height: calc(var(--s) * 5px);
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--color-success) 55%, #f6e27a);
+  box-shadow: 0 0 calc(var(--s) * 10px) calc(var(--s) * 3px)
+    color-mix(in oklab, #f6e27a 55%, transparent);
+  animation-name: fx-wander, fx-glow;
+  animation-timing-function: ease-in-out, ease-in-out;
+  animation-iteration-count: infinite, infinite;
+  animation-direction: alternate, alternate;
+}
+
+/* 브라우저 탭이 안 보이면 멈춤 */
+.fx-layer[data-paused],
+.fx-layer[data-paused] * {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-layer {
+    display: none;
+  }
+}
+
+@keyframes fx-fall {
+  from {
+    transform: translateY(-8vh);
+  }
+  to {
+    transform: translateY(116vh);
+  }
+}
+@keyframes fx-sway {
+  from {
+    transform: translateX(-24px) rotate(-30deg);
+  }
+  to {
+    transform: translateX(24px) rotate(160deg);
+  }
+}
+@keyframes fx-tumble {
+  from {
+    transform: translateX(-30px) rotate(0deg);
+  }
+  to {
+    transform: translateX(30px) rotate(320deg);
+  }
+}
+@keyframes fx-drift {
+  from {
+    transform: translateX(-12px);
+  }
+  to {
+    transform: translateX(12px);
+  }
+}
+@keyframes fx-wander {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(30px, -22px);
+  }
+  100% {
+    transform: translate(-22px, 26px);
+  }
+}
+@keyframes fx-glow {
+  from {
+    opacity: 0.15;
+  }
+  to {
+    opacity: 0.95;
   }
 }
