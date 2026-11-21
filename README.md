@@ -1,4 +1,4 @@
-# 📚 studyApp — 스터디 퀴즈 웹앱
+# 📚 studyApp — 스터디 웹앱 (주제 미정)
 
 ## 팀 소개
 
@@ -38,8 +38,8 @@ npm run dev      # http://localhost:5173
 
 ```
 src/
-├── types/        ← 공용 타입 (예: quiz.ts)          🔒 팀장 승인 필요
-├── data/         ← 퀴즈 문제 데이터
+├── types/        ← 공용 타입                      🔒 팀장 승인 필요
+├── data/         ← 앱에서 쓰는 데이터
 ├── components/   ← 여러 화면에서 쓰는 공용 부품
 ├── pages/        ← 화면 단위 컴포넌트 (1인 1페이지)
 ├── App.tsx       ← 페이지 연결(라우팅)              🔒 팀장만 수정
@@ -51,10 +51,10 @@ src/
 | 담당 | 브랜치 예시 | 파일 |
 |---|---|---|
 | 팀장 | `feature/setup` | `App.tsx`, `types/`, 설정 파일, PR 리뷰·병합 |
-| 팀원 A | `feature/quiz-page` | `pages/QuizPage.tsx` |
-| 팀원 B | `feature/result-page` | `pages/ResultPage.tsx` |
-| 팀원 C | `feature/create-page` | `pages/CreatePage.tsx` |
-| 팀원 D | `feature/quiz-data` | `data/`, 저장 기능 |
+| 팀원 A | 주제 확정 후 배정 | 주제 확정 후 배정 |
+| 팀원 B | 주제 확정 후 배정 | 주제 확정 후 배정 |
+| 팀원 C | 주제 확정 후 배정 | 주제 확정 후 배정 |
+| 팀원 D | 주제 확정 후 배정 | 주제 확정 후 배정 |
 
 > **원칙: 내 담당 파일만 수정한다.** 다른 사람 파일이나 🔒 파일을 고쳐야 하면 단톡방에서 먼저 말한다.
 
@@ -77,7 +77,7 @@ npm run build
 
 # ④ 커밋 & 푸시
 git add .
-git commit -m "feat: 퀴즈 화면 보기 버튼 추가"
+git commit -m "feat: 메인 화면 레이아웃 추가"
 git push origin feature/기능이름
 
 # ⑤ GitHub에서 Pull Request 생성 → 팀장 승인 → 팀장이 병합
@@ -99,8 +99,8 @@ git push origin feature/기능이름
 ### 🌿 브랜치 이름
 | 접두어 | 용도 | 예시 |
 |---|---|---|
-| `feature/` | 새 기능 | `feature/quiz-page` |
-| `fix/` | 버그 수정 | `fix/score-calc` |
+| `feature/` | 새 기능 | `feature/main-page` |
+| `fix/` | 버그 수정 | `fix/button-style` |
 | `docs/` | 문서 | `docs/readme` |
 
 ### 💬 커밋 메시지
@@ -115,7 +115,7 @@ git push origin feature/기능이름
 | `docs` | 문서 |
 | `chore` | 설정, 패키지 |
 
-예: `feat: 결과 화면에 점수 표시`
+예: `feat: 메인 화면 레이아웃 추가`
 
 ### 📦 PR 규칙
 - **작게, 자주.** 기능 하나 = PR 하나
@@ -123,8 +123,8 @@ git push origin feature/기능이름
 - PR 설명은 템플릿을 채워서 작성
 
 ### ✍️ 코드 스타일
-- 컴포넌트는 **함수형**, 파일 이름은 **PascalCase** (`QuizPage.tsx`)
-- 변수와 함수 이름은 **camelCase** (`currentScore`)
+- 컴포넌트는 **함수형**, 파일 이름은 **PascalCase** (`MainPage.tsx`)
+- 변수와 함수 이름은 **camelCase** (`userName`)
 - `any` 타입 사용 금지
 - 공용 타입은 `src/types/`에서 import해서 사용 (각자 새로 만들지 않기)
 - 저장 시 Prettier 자동 정렬 사용
