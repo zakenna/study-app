@@ -108,6 +108,8 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 
 | Era | 범위 |
 |---|---|
+| `three-kingdoms` | ~ 676 삼국 통일 전 (가야 포함) |
+| `north-south` | 676 삼국 통일 ~ 고려 건국 전 |
 | `joseon-early` | 1392 조선 건국 ~ 임진왜란 전 |
 | `joseon-late` | 1592 임진왜란 ~ 1863 흥선대원군 집권 전 |
 | `modern` | 1863 흥선대원군 집권 ~ 1910 (대한제국 포함) |
