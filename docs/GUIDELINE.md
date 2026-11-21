@@ -213,7 +213,8 @@ src/
 ├── App.tsx             🔒       레이아웃, 탭, 헤더
 ├── App.Onboarding.tsx  🔒       첫 방문 온보딩 / 프로필 수정 모달
 ├── App.SeasonPicker.tsx 🔒      계절 테마 선택기 (🌸🌿🍁❄️)
-└── App.Eaves.tsx       🔒       헤더 아래 기와 처마선 장식
+├── App.Eaves.tsx       🔒       헤더 아래 기와 처마선 장식
+└── App.Intro.tsx       🔒       한옥 문 소개 화면 (앱을 열 때 한 번, 봄 테마 고정)
 ```
 
 | 작업 단위 | 브랜치 예시 | 내용 |

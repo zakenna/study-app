@@ -12,6 +12,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import Eaves from "./App.Eaves";
+import Intro from "./App.Intro";
 import Onboarding from "./App.Onboarding";
 import SeasonPicker from "./App.SeasonPicker";
 import { calcStudyStreak, daysUntil } from "./lib/date";
@@ -113,6 +114,8 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [navIntent, setNavIntent] = useState<NavIntent | undefined>(undefined);
+  // 🏯 앱을 열 때마다 한 번 한옥 문 소개 화면 (탭 이동에는 다시 나오지 않음)
+  const [showIntro, setShowIntro] = useState(true);
 
   const profile = unsavedProfile ?? storedProfile;
   const streak = calcStudyStreak(logs);
@@ -231,8 +234,15 @@ function App() {
         })}
       </nav>
 
+      {showIntro && (
+        <Intro
+          returning={profile !== null}
+          onDone={() => setShowIntro(false)}
+        />
+      )}
+
       <AnimatePresence>
-        {showOnboarding && (
+        {showOnboarding && !showIntro && (
           <Onboarding
             key="onboarding"
             initialProfile={profile}
