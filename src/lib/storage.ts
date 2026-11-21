@@ -12,6 +12,21 @@ export const STORAGE_KEYS = {
   tipVotes: "studyapp:tipVotes",
 } as const;
 
+/**
+ * 저장 데이터가 바뀌면 window에 발생하는 이벤트 이름.
+ * 화면에서 직접 구독하지 말고 lib/useStudyData.ts 훅을 쓴다.
+ */
+export const STUDY_CHANGE_EVENT = "studyapp:change";
+
+/** 모든 공개 쓰기 함수의 마지막에 한 번 호출한다 */
+function notifyChange(): void {
+  try {
+    window.dispatchEvent(new Event(STUDY_CHANGE_EVENT));
+  } catch {
+    // window가 없는 환경(테스트 등)에서는 무시
+  }
+}
+
 function read<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
@@ -38,7 +53,9 @@ export function getProfile(): Profile | null {
 }
 
 export function saveProfile(profile: Profile): boolean {
-  return write(STORAGE_KEYS.profile, profile);
+  const ok = write(STORAGE_KEYS.profile, profile);
+  notifyChange();
+  return ok;
 }
 
 /* ---------- 문제별 기록 ---------- */
@@ -89,6 +106,7 @@ export function recordAnswer(
   };
   write(STORAGE_KEYS.stats, { ...stats, [questionId]: next });
   addStudyLog(isCorrect, new Date(now));
+  notifyChange(); // 기록 두 개를 모두 쓴 뒤 한 번만 알린다
   return next;
 }
 
@@ -158,5 +176,6 @@ export function voteTip(tipId: string): TipVote[] {
       )
     : [...votes, { tipId, count: 1 }];
   write(STORAGE_KEYS.tipVotes, next);
+  notifyChange();
   return next;
 }

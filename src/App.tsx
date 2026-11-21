@@ -11,8 +11,9 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type ComponentType } from "react";
 import Onboarding from "./App.Onboarding";
-import { daysUntil } from "./lib/date";
-import { getProfile, getStudyStreak, saveProfile } from "./lib/storage";
+import { calcStudyStreak, daysUntil } from "./lib/date";
+import { saveProfile } from "./lib/storage";
+import { useStudyData } from "./lib/useStudyData";
 import DashboardPage from "./pages/DashboardPage";
 import MatchPage from "./pages/MatchPage";
 import QuizPage from "./pages/QuizPage";
@@ -51,9 +52,8 @@ const TABS: Tab[] = [
 ];
 
 /** "○○님, 시험까지 D-n 🔥 n일" */
-function Greeting({ profile }: { profile: Profile }) {
+function Greeting({ profile, streak }: { profile: Profile; streak: number }) {
   const dDay = profile.examDate ? daysUntil(profile.examDate) : null;
-  const streak = getStudyStreak();
 
   let examText = "시험 날짜를 정해 보세요";
   if (dDay !== null) {
@@ -87,16 +87,20 @@ function BackgroundGlow() {
 }
 
 function App() {
-  const [profile, setProfile] = useState<Profile | null>(() => getProfile());
+  const { profile: storedProfile, logs } = useStudyData();
+  // 저장이 막힌 환경(시크릿 모드 등)에서도 이번 방문 동안은 입력한 프로필로 동작하도록 보관
+  const [unsavedProfile, setUnsavedProfile] = useState<Profile | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
+  const profile = unsavedProfile ?? storedProfile;
+  const streak = calcStudyStreak(logs);
   const ActivePage = (TABS.find((tab) => tab.id === activeTab) ?? TABS[0]).page;
   const showOnboarding = profile === null || isEditingProfile;
 
   const handleSaveProfile = (next: Profile) => {
-    saveProfile(next); // 저장이 막힌 환경(시크릿 모드 등)이어도 이번 방문 동안은 동작
-    setProfile(next);
+    // 저장에 성공하면 "studyapp:change" 이벤트로 useStudyData가 새 프로필을 읽는다
+    setUnsavedProfile(saveProfile(next) ? null : next);
     setIsEditingProfile(false);
   };
 
@@ -105,7 +109,7 @@ function App() {
       <BackgroundGlow />
 
       {/* 데스크톱 사이드바 */}
-      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col gap-1 border-r border-line bg-base/60 p-4 backdrop-blur-xl md:flex">
+      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col gap-1 border-r border-line bg-canvas/60 p-4 backdrop-blur-xl md:flex">
         <p className="mb-6 px-3 pt-2 text-lg font-bold">
           📜 <span className="text-primary">한국사</span> 꿀팁
         </p>
@@ -142,10 +146,10 @@ function App() {
       </aside>
 
       <div className="md:pl-60">
-        <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-line bg-base/70 px-4 py-3 backdrop-blur-xl md:px-8">
+        <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-line bg-canvas/70 px-4 py-3 backdrop-blur-xl md:px-8">
           <div className="min-w-0 flex-1">
             {profile ? (
-              <Greeting profile={profile} />
+              <Greeting profile={profile} streak={streak} />
             ) : (
               <p className="text-sm text-muted">환영해요!</p>
             )}
@@ -178,7 +182,7 @@ function App() {
       </div>
 
       {/* 모바일 하단 탭 */}
-      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t border-line bg-base/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t border-line bg-canvas/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
         {TABS.map((tab) => {
           const isActive = tab.id === activeTab;
           return (

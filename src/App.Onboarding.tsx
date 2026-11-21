@@ -64,7 +64,7 @@ function Onboarding({ initialProfile, onSave, onClose }: OnboardingProps) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-base/70 p-4 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-canvas/70 p-4 backdrop-blur-sm sm:items-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -79,7 +79,7 @@ function Onboarding({ initialProfile, onSave, onClose }: OnboardingProps) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 24 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="relative w-full max-w-md space-y-4 rounded-2xl border border-line bg-base/90 p-6 shadow-2xl shadow-black/40 backdrop-blur-xl"
+        className="relative w-full max-w-md space-y-4 rounded-2xl border border-line bg-canvas/90 p-6 shadow-2xl shadow-black/40 backdrop-blur-xl"
       >
         {onClose && (
           <button

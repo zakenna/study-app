@@ -125,9 +125,20 @@ export interface TipVote  { tipId: string; count: number } // 👍 "외워졌어
 ### 3-4. localStorage 키
 | 키 | 값 |
 |---|---|
+| `studyapp:profile` | `Profile` |
+| `studyapp:stats` | `Record<questionId, QuestionStat>` |
+| `studyapp:studyLogs` | `StudyLog[]` |
 | `studyapp:tipVotes` | `TipVote[]` |
 
 다른 키도 `studyapp:` 접두어를 쓰고, 팀장이 `storage.ts`에서 정의한다.
+
+### 3-5. 데이터 읽기·쓰기 방법 ⭐
+- **화면(컴포넌트)은 저장 데이터를 `useStudyData()` 훅으로 읽는다.** (`src/lib/useStudyData.ts`)
+  `const { profile, stats, logs, tipVotes } = useStudyData();`
+- **쓰기는 `storage.ts` 함수**(`recordAnswer`, `saveProfile`, `voteTip`)를 호출한다.
+  쓰기가 끝나면 `"studyapp:change"` 이벤트가 발생하고, 훅을 쓰는 모든 화면(헤더의 🔥 등)이 즉시 다시 그려진다.
+- 컴포넌트에서 `getStats()` 같은 읽기 함수를 렌더링 중에 직접 부르지 않는다. 다른 화면의 변경이 반영되지 않는다.
+  (클릭 처리 함수 안에서 한 번 읽는 것은 괜찮다)
 
 ---
 
@@ -157,11 +168,17 @@ export interface TipVote  { tipId: string; count: number } // 👍 "외워졌어
 src/
 ├── types/              🔒 팀장
 ├── lib/
-│   ├── storage.ts      🔒 팀장   localStorage 읽기/쓰기 전부
+│   ├── storage.ts      🔒 팀장   localStorage 읽기/쓰기 전부 (쓰면 "studyapp:change" 이벤트)
+│   ├── useStudyData.ts 🔒 팀장   저장 데이터 구독 훅 — 화면은 이걸로 읽는다 (3-5)
 │   ├── memory.ts       🔒 팀장   망각곡선 계산 (retention, updateStrength, getWeakQuestions)
+│   ├── date.ts         🔒 팀장   날짜 키(YYYY-MM-DD), D-day, 연속 학습일
+│   ├── labels.ts       🔒 팀장   ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS
 │   └── quiz.ts            A      문제 뽑기·채점 로직
 ├── components/ui/      🔒 팀장   GlassCard, Button, Badge, ProgressBar, TipCard 등 공용 부품
 ├── data/                  D      문제·꿀팁(tips.ts)·타임라인·인물 데이터
+│   └── questions/
+│       ├── <era>.ts       D      시대별 문제
+│       └── index.ts       D      시대별 문제를 하나로 합침 (새 시대 파일을 만들면 여기에 추가)
 ├── pages/
 │   ├── DashboardPage.tsx  D
 │   ├── QuizPage.tsx       A
@@ -169,7 +186,8 @@ src/
 │   ├── TipsPage.tsx       C
 │   ├── TimelinePage.tsx   B
 │   └── MatchPage.tsx      B
-└── App.tsx             🔒 팀장   레이아웃, 탭, 온보딩
+├── App.tsx             🔒 팀장   레이아웃, 탭, 헤더
+└── App.Onboarding.tsx  🔒 팀장   첫 방문 온보딩 / 프로필 수정 모달
 ```
 
 | 담당 | 브랜치 예시 | 맡는 것 |
@@ -182,7 +200,7 @@ src/
 
 ### 작업 순서
 1. **팀장 뼈대(`feature/skeleton`)가 다른 작업보다 먼저 병합된다.**
-   뼈대 범위: 패키지 설치, 테마 변수, 공용 타입, `storage.ts`, `memory.ts`, `components/ui`(TipCard 포함), `App.tsx`(탭·온보딩)
+   뼈대 범위: 패키지 설치, 테마 변수, 공용 타입, `lib/`(storage·useStudyData·memory·date·labels), `components/ui`(TipCard 포함), `App.tsx`(탭·헤더)·`App.Onboarding.tsx`
 2. 뼈대 병합 후 A~D가 각자 브랜치에서 작업을 시작한다.
 
 ### 규칙
@@ -200,7 +218,7 @@ src/
 
   | 변수 | 용도 | Tailwind 예시 |
   |---|---|---|
-  | `--color-base` | 화면 배경 | `bg-base` |
+  | `--color-canvas` | 화면 배경 (밝은 버튼의 글자색으로도 사용) | `bg-canvas`, `text-canvas` |
   | `--color-surface` | 카드·패널 배경 | `bg-surface` |
   | `--color-line` | 테두리 | `border-line` |
   | `--color-ink` | 기본 글자 | `text-ink` |
