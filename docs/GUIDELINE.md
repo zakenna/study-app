@@ -108,6 +108,8 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 
 | Era | 범위 |
 |---|---|
+| `three-kingdoms` | ~ 676 삼국 통일 전 (가야 포함) |
+| `north-south` | 676 삼국 통일 ~ 고려 건국 전 |
 | `joseon-early` | 1392 조선 건국 ~ 임진왜란 전 |
 | `joseon-late` | 1592 임진왜란 ~ 1863 흥선대원군 집권 전 |
 | `modern` | 1863 흥선대원군 집권 ~ 1910 (대한제국 포함) |
@@ -136,6 +138,7 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 | `studyapp:studyLogs` | `StudyLog[]` |
 | `studyapp:tipVotes` | `TipVote[]` |
 | `studyapp:timelineBest` | `number` (타임라인 순서 맞추기 연속 성공 최고 기록) |
+| `studyapp:matchBest` | `Record<쌍 수, 초>` (인물 매칭 쌍 수별 최단 시간, 예: `{ "4": 21 }`) |
 
 다른 키도 `studyapp:` 접두어를 쓰고, 팀장이 `storage.ts`에서 정의한다.
 
@@ -183,7 +186,7 @@ src/
 │   ├── memory.ts       🔒       망각곡선 계산 (retention, updateStrength, projectRetention)
 │   ├── date.ts         🔒       날짜 키(YYYY-MM-DD), D-day, 연속 학습일
 │   ├── useCountUp.ts   🔒       숫자가 올라가는 애니메이션 훅 (결과·요약 카드)
-│   ├── labels.ts       🔒       ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS, formatYear
+│   ├── labels.ts       🔒       ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS, formatYear, eraColor(시대 색)
 │   └── quiz.ts                   문제 뽑기·채점 로직
 ├── components/ui/      🔒       GlassCard, Button, Badge, ProgressBar, TipCard, OptionButton(4지선다 보기) 등 공용 부품
 ├── data/                         문제·꿀팁(tips.ts)·타임라인·인물 데이터

@@ -9,7 +9,7 @@ export const timelineEvents: TimelineEvent[] = [
     id: "tl-prehistoric-001",
     era: "prehistoric",
     year: -2333,
-    title: "고조선 건국 (단군왕검)",
+    title: "고조선 건국 (단군왕검, 『동국통감』 기준 전승)",
   },
   {
     id: "tl-prehistoric-002",

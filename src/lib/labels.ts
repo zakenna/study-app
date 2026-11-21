@@ -36,3 +36,13 @@ export const TIP_KIND_LABELS: Record<Tip["kind"], string> = {
   acronym: "두문자",
   story: "이야기",
 };
+
+/**
+ * 시대 색: 시대는 순서가 있는 값이라 한 방향으로 변하는 색(accent → primary)으로 표현한다.
+ * 테마 변수만 섞어서 만든다. 색만으로 구분하지 않도록 시대 이름을 항상 함께 표시할 것.
+ */
+export function eraColor(era: Era): string {
+  const index = ERAS.indexOf(era);
+  const accentShare = Math.round(100 - (index / (ERAS.length - 1)) * 100);
+  return `color-mix(in oklab, var(--color-accent) ${accentShare}%, var(--color-primary))`;
+}
