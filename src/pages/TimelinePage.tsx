@@ -1,34 +1,70 @@
-import { ListTodo } from "lucide-react";
-import Badge from "../components/ui/Badge";
-import GlassCard from "../components/ui/GlassCard";
+import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
+import TimelineChronicle from "./TimelinePage.Chronicle";
+import TimelineGame from "./TimelinePage.Game";
 
-// 뼈대 단계의 자리 표시용 화면. 아래 TODO를 구현하면서 자유롭게 바꾼다.
-const TODOS = [
-  "사건 카드 4~5장 무작위로 뽑기 (data/timeline.ts)",
-  "드래그로 연도 순 정렬 (motion의 Reorder)",
-  "채점 후 정답 순서와 연도 공개",
+type Mode = "game" | "chronicle";
+
+const MODES: { value: Mode; label: string }[] = [
+  { value: "game", label: "🎯 순서 맞추기" },
+  { value: "chronicle", label: "📜 연표 보기" },
 ];
 
+/** 🗺️ 타임라인: 순서 맞추기 게임 ↔ 연표 보기 */
 function TimelinePage() {
+  const [mode, setMode] = useState<Mode>("game");
+
   return (
-    <GlassCard>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xl font-bold">타임라인 순서 맞추기</h2>
-        <Badge tone="primary">준비 중</Badge>
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-2xl font-bold">타임라인</h2>
+        <p className="mt-1 text-sm text-muted">
+          사건의 앞뒤를 알면 연도가 저절로 외워져요.
+        </p>
       </div>
-      <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-muted">
-        <ListTodo size={16} aria-hidden />
-        TODO
-      </p>
-      <ul className="space-y-2 text-sm text-muted">
-        {TODOS.map((todo) => (
-          <li key={todo} className="flex gap-2">
-            <span aria-hidden>☐</span>
-            <span>{todo}</span>
-          </li>
+
+      <div
+        role="tablist"
+        aria-label="타임라인 모드"
+        className="grid grid-cols-2 rounded-xl border border-line bg-surface p-1"
+      >
+        {MODES.map((m) => (
+          <button
+            key={m.value}
+            type="button"
+            role="tab"
+            aria-selected={mode === m.value}
+            onClick={() => setMode(m.value)}
+            className={`relative rounded-lg py-2 text-sm transition ${
+              mode === m.value
+                ? "font-semibold text-ink"
+                : "text-muted hover:text-ink"
+            }`}
+          >
+            {mode === m.value && (
+              <motion.span
+                layoutId="timeline-mode"
+                className="absolute inset-0 rounded-lg bg-primary/15 ring-1 ring-primary/40"
+                transition={{ duration: 0.25 }}
+              />
+            )}
+            <span className="relative">{m.label}</span>
+          </button>
         ))}
-      </ul>
-    </GlassCard>
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={mode}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+        >
+          {mode === "game" ? <TimelineGame /> : <TimelineChronicle />}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
 

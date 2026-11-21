@@ -2,10 +2,10 @@ import { RotateCcw } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import { useState } from "react";
 import GlassCard from "../components/ui/GlassCard";
+import OptionButton from "../components/ui/OptionButton";
 import { isCorrectChoice, shuffleOptions } from "../lib/quiz";
 import { recordAnswer } from "../lib/storage";
 import type { Question } from "../types";
-import { OptionButton } from "./QuizPage.Play";
 
 /** 꿀팁 아래에서 바로 푸는 연결 문제 1개 (채점 + 해설 + recordAnswer) */
 function TipsInlineQuiz({ question: original }: { question: Question }) {

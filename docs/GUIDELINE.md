@@ -135,6 +135,7 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 | `studyapp:stats` | `Record<questionId, QuestionStat>` |
 | `studyapp:studyLogs` | `StudyLog[]` |
 | `studyapp:tipVotes` | `TipVote[]` |
+| `studyapp:timelineBest` | `number` (타임라인 순서 맞추기 연속 성공 최고 기록) |
 
 다른 키도 `studyapp:` 접두어를 쓰고, 팀장이 `storage.ts`에서 정의한다.
 
@@ -157,7 +158,8 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 5. **표현 주의.** 특정 국가·민족·인물을 비하하거나 혐오하는 표현 금지. 역사적 비극을 가볍게 희화화하지 않는다.
 6. 데이터 위치: `src/data/questions/<era>.ts`, `src/data/tips.ts`, `src/data/timeline.ts`, `src/data/persons.ts`
 7. 목표 분량: 시대당 문제 **5개 이상**(총 45개+), 꿀팁은 문제의 **절반 이상**
-8. Claude Code가 콘텐츠를 만들면 보고서에 **"검증이 필요한 항목"**을 반드시 따로 적는다.
+8. **숫자 꿀팁을 추가하면 `src/data/tips.ts`의 `tipYearEvents`에도 사건 이름을 추가**한다. (암기 카드 앞면 "○○은 몇 년?"에 사용. 빠지면 연결 문제 질문으로 대신 나온다)
+9. Claude Code가 콘텐츠를 만들면 보고서에 **"검증이 필요한 항목"**을 반드시 따로 적는다.
 
 ### 꿀팁 예시
 | 종류 | 예시 |
@@ -183,7 +185,7 @@ src/
 │   ├── useCountUp.ts   🔒       숫자가 올라가는 애니메이션 훅 (결과·요약 카드)
 │   ├── labels.ts       🔒       ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS, formatYear
 │   └── quiz.ts                   문제 뽑기·채점 로직
-├── components/ui/      🔒       GlassCard, Button, Badge, ProgressBar, TipCard 등 공용 부품
+├── components/ui/      🔒       GlassCard, Button, Badge, ProgressBar, TipCard, OptionButton(4지선다 보기) 등 공용 부품
 ├── data/                         문제·꿀팁(tips.ts)·타임라인·인물 데이터
 │   └── questions/
 │       ├── <era>.ts              시대별 문제
