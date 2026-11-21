@@ -99,7 +99,7 @@ function ExamSelect({ onStart }: ExamSelectProps) {
                       <p className="text-xs text-muted">
                         {exam.isSample
                           ? "개발 확인용 · 가짜 정답"
-                          : `시행일 ${formatDate(exam.date)}`}{" "}
+                          : `자료 게시일 ${formatDate(exam.postedAt)}`}{" "}
                         · {EXAM_QUESTION_COUNT}문항 · {EXAM_MINUTES}분
                       </p>
                     </div>

@@ -1,6 +1,6 @@
 // 한국사능력검정시험 기출 회차 데이터 (OMR 채점용).
 // ⚖️ 저작권 원칙: 기출문제 원문(지문·사료·보기·그림)은 절대 저장·표시하지 않는다.
-//    저장하는 것은 사실 정보만 — 회차, 시행일, 문항 번호, 정답 번호(1~5), 배점, 우리가 분류한 시대.
+//    저장하는 것은 사실 정보만 — 회차, 자료 게시일, 문항 번호, 정답 번호(1~5), 배점, 우리가 분류한 시대.
 //    문제는 국사편찬위원회 공식 시험 자료실 링크로만 안내한다.
 import type { Era } from "../types";
 
@@ -17,7 +17,7 @@ export interface ExamQuestion {
 export interface Exam {
   id: string; // "advanced-80"
   round: number; // 회차
-  date: string; // 시행일 "YYYY-MM-DD"
+  postedAt: string; // 공식 시험 자료실 게시일 "YYYY-MM-DD" (시행일은 자료에 인쇄되어 있지 않음)
   level: "advanced"; // 심화
   questions: ExamQuestion[]; // 50문항, 배점 합계 100
   isSample?: boolean; // 개발 확인용 가짜 회차 표시 (지금은 쓰지 않음)
@@ -35,13 +35,13 @@ export const EXAM_QUESTION_COUNT = 50;
  * - 정답·배점: 국사편찬위원회 시험 자료실의 각 회차 "심화 정답표"에서 옮김
  *   (정답표의 답지번호별·문항배점별 빈도표와 대조 검증, 배점 합계 100)
  * - 시대(era): 우리가 문제지를 보고 분류한 값 (문제 원문은 저장하지 않음)
- * - date: 문제지·정답표에 시행일이 인쇄되어 있지 않아 공식 시험 자료실 게시일을 씀
+ * - postedAt: 공식 시험 자료실 게시일 (문제지·정답표에 시행일이 인쇄되어 있지 않아 시행일 대신 사실 그대로 게시일을 둔다)
  */
 export const exams: Exam[] = [
   {
     id: "advanced-80",
     round: 80,
-    date: "2026-10-17",
+    postedAt: "2026-10-17",
     level: "advanced",
     questions: [
       { no: 1, answer: 1, points: 1, era: "prehistoric" },
@@ -70,7 +70,7 @@ export const exams: Exam[] = [
       { no: 24, answer: 5, points: 3, era: "joseon-late" },
       { no: 25, answer: 2, points: 1, era: "joseon-late" },
       { no: 26, answer: 5, points: 2, era: "joseon-late" },
-      { no: 27, answer: 4, points: 2, era: "joseon-early" },
+      { no: 27, answer: 4, points: 2, era: "joseon-late" },
       { no: 28, answer: 5, points: 1, era: "modern" },
       { no: 29, answer: 5, points: 2, era: "modern" },
       { no: 30, answer: 4, points: 3, era: "modern" },
@@ -99,7 +99,7 @@ export const exams: Exam[] = [
   {
     id: "advanced-79",
     round: 79,
-    date: "2026-08-09",
+    postedAt: "2026-08-09",
     level: "advanced",
     questions: [
       { no: 1, answer: 2, points: 1, era: "prehistoric" },
@@ -157,7 +157,7 @@ export const exams: Exam[] = [
   {
     id: "advanced-78",
     round: 78,
-    date: "2026-05-23",
+    postedAt: "2026-05-23",
     level: "advanced",
     questions: [
       { no: 1, answer: 5, points: 1, era: "prehistoric" },
