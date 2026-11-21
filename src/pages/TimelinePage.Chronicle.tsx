@@ -3,19 +3,10 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState, type CSSProperties } from "react";
 import TipCard from "../components/ui/TipCard";
 import { getTipById } from "../data/tips";
-import { ERAS, ERA_LABELS, formatYear } from "../lib/labels";
+import { ERAS, ERA_LABELS, eraColor, formatYear } from "../lib/labels";
 import { isTipMemorized, toggleTipMemorized } from "../lib/storage";
 import { useStudyData } from "../lib/useStudyData";
 import { eventsInScope, sortByYear } from "./TimelinePage.helpers";
-
-/**
- * 시대 띠 색: 시대는 순서가 있는 값이라 한 방향으로 변하는 색(accent → primary)으로 표현한다.
- * 색만으로 구분하지 않도록 시대 이름을 항상 함께 표시.
- */
-function bandColor(index: number): string {
-  const accentShare = Math.round(100 - (index / (ERAS.length - 1)) * 100);
-  return `color-mix(in oklab, var(--color-accent) ${accentShare}%, var(--color-primary))`;
-}
 
 /** 📜 연표 보기: 시대별 색 띠 + 세로 연표, 💡 누르면 꿀팁 */
 function TimelineChronicle() {
@@ -24,10 +15,10 @@ function TimelineChronicle() {
 
   return (
     <ol className="space-y-6" aria-label="한국사 연표">
-      {ERAS.map((era, eraIndex) => {
+      {ERAS.map((era) => {
         const events = sortByYear(eventsInScope(era));
         if (events.length === 0) return null;
-        const style = { "--band": bandColor(eraIndex) } as CSSProperties;
+        const style = { "--band": eraColor(era) } as CSSProperties;
         return (
           <li key={era} style={style}>
             <div className="mb-3 flex items-center gap-2">

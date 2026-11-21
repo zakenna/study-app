@@ -11,6 +11,7 @@ export const STORAGE_KEYS = {
   studyLogs: "studyapp:studyLogs",
   tipVotes: "studyapp:tipVotes",
   timelineBest: "studyapp:timelineBest",
+  matchBest: "studyapp:matchBest",
 } as const;
 
 /**
@@ -203,6 +204,24 @@ export function getTimelineBest(): number {
 export function saveTimelineBest(streak: number): boolean {
   if (streak <= getTimelineBest()) return false;
   write(STORAGE_KEYS.timelineBest, streak);
+  notifyChange();
+  return true;
+}
+
+/* ---------- 인물 매칭 최단 시간 (3-4) ---------- */
+
+/** 쌍 수별 최단 완료 시간(초). 예: { "4": 21, "6": 48 } */
+export function getMatchBest(): Record<string, number> {
+  const best = read<Record<string, number>>(STORAGE_KEYS.matchBest, {});
+  return best && typeof best === "object" && !Array.isArray(best) ? best : {};
+}
+
+/** 이번 기록이 그 쌍 수의 최단 시간이면 저장하고 true를 돌려준다 */
+export function saveMatchBest(pairs: number, seconds: number): boolean {
+  const best = getMatchBest();
+  const previous = best[String(pairs)];
+  if (previous !== undefined && previous <= seconds) return false;
+  write(STORAGE_KEYS.matchBest, { ...best, [String(pairs)]: seconds });
   notifyChange();
   return true;
 }
