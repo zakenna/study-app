@@ -36,7 +36,7 @@ export const tips: Tip[] = [
     era: "three-kingdoms",
     year: 427,
     kind: "story",
-    text: "이름처럼 오래 산 장수왕 — 79년 동안 다스리며 도읍을 평양으로 옮기고 남쪽으로 내려갔다",
+    text: "이름처럼 오래 산 장수왕 — 80년 가까이(413~491) 다스리며 도읍을 평양으로 옮기고 남쪽으로 내려갔다",
   },
   {
     id: "tip-three-kingdoms-002",
@@ -235,7 +235,7 @@ export const tips: Tip[] = [
     era: "colonial",
     year: 1927,
     kind: "story",
-    text: "신간회 = '고목신간(古木新幹)' — 늙은 나무에 돋은 새 줄기처럼 좌우가 하나로 뭉쳤다",
+    text: "신간회 — '신간출고목(新幹出古木)', 고목에서 새 줄기가 나온다는 뜻에서 따왔다고 알려짐",
   },
   {
     id: "tip-colonial-003",

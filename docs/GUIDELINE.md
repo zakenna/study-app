@@ -100,6 +100,9 @@ export interface TipVote  { tipId: string; count: number } // 👍 "외워졌어
 
 타입이 더 필요하면 **직접 추가하지 말고 팀장에게 요청**한다.
 
+- **연도(`year`)는 기원전이면 음수**로 적는다 (예: 고조선 멸망 `-108`).
+  화면에 표시할 때는 `lib/labels.ts`의 `formatYear(year)`를 쓴다 → `-108` → "기원전 108년", `1592` → "1592년"
+
 ### 3-1. 시대 경계
 문제·꿀팁·타임라인의 `era`는 아래 기준으로 분류한다.
 
@@ -157,7 +160,7 @@ export interface TipVote  { tipId: string; count: number } // 👍 "외워졌어
 | 종류 | 예시 |
 |---|---|
 | 숫자 말장난 | 1592 임진왜란: "일(1)본군이 오(5)자, 구(9)국의 영웅 이(2)순신!" |
-| 숫자 말장난 | 1919 3·1 운동: "일어나 구하자! 일어나 구하자!(1919)" |
+| 숫자 말장난 | 1919 3·1 운동: "일(1)어나 구(9)하자! 일(1)어나 구(9)하자!" |
 | 두문자 | 조선 왕 순서: "태정태세문단세 예성연중인명선…" |
 
 ---
@@ -174,7 +177,7 @@ src/
 │   ├── useStudyData.ts 🔒       저장 데이터 구독 훅 — 화면은 이걸로 읽는다 (3-5)
 │   ├── memory.ts       🔒       망각곡선 계산 (retention, updateStrength, getWeakQuestions)
 │   ├── date.ts         🔒       날짜 키(YYYY-MM-DD), D-day, 연속 학습일
-│   ├── labels.ts       🔒       ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS
+│   ├── labels.ts       🔒       ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS, formatYear
 │   └── quiz.ts                   문제 뽑기·채점 로직
 ├── components/ui/      🔒       GlassCard, Button, Badge, ProgressBar, TipCard 등 공용 부품
 ├── data/                         문제·꿀팁(tips.ts)·타임라인·인물 데이터
