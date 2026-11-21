@@ -276,7 +276,7 @@ function QuizPlay({ quiz, snapshot, onFinish, onQuit }: QuizPlayProps) {
   );
 }
 
-type OptionState = "idle" | "correct" | "wrong" | "dimmed";
+export type OptionState = "idle" | "correct" | "wrong" | "dimmed";
 
 interface OptionButtonProps {
   index: number;
@@ -295,7 +295,7 @@ const OPTION_CLASSES: Record<OptionState, string> = {
   dimmed: "border-line bg-surface opacity-45",
 };
 
-function OptionButton({
+export function OptionButton({
   index,
   text,
   state,

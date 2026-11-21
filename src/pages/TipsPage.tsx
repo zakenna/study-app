@@ -1,35 +1,28 @@
-import { ListTodo } from "lucide-react";
-import Badge from "../components/ui/Badge";
-import GlassCard from "../components/ui/GlassCard";
+import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
+import TipsFlashcards from "./TipsPage.Flashcards";
+import TipsList from "./TipsPage.List";
 
-// 뼈대 단계의 자리 표시용 화면. 아래 TODO를 구현하면서 자유롭게 바꾼다.
-const TODOS = [
-  "전체 꿀팁 목록 (data/tips, TipCard)",
-  "👍 외워졌어요 토글 (toggleTipMemorized, isTipMemorized)",
-  "외운 꿀팁 / 아직 못 외운 꿀팁 필터",
-  "시대별 필터",
-];
-
+/** 꿀팁 모음: 목록(검색·필터·연결 문제) ↔ 🎴 암기 카드 모드 */
 function TipsPage() {
+  const [mode, setMode] = useState<"list" | "cards">("list");
+
   return (
-    <GlassCard>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xl font-bold">꿀팁 모음</h2>
-        <Badge tone="primary">준비 중</Badge>
-      </div>
-      <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-muted">
-        <ListTodo size={16} aria-hidden />
-        TODO
-      </p>
-      <ul className="space-y-2 text-sm text-muted">
-        {TODOS.map((todo) => (
-          <li key={todo} className="flex gap-2">
-            <span aria-hidden>☐</span>
-            <span>{todo}</span>
-          </li>
-        ))}
-      </ul>
-    </GlassCard>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={mode}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.25 }}
+      >
+        {mode === "list" ? (
+          <TipsList onStartCards={() => setMode("cards")} />
+        ) : (
+          <TipsFlashcards onExit={() => setMode("list")} />
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 

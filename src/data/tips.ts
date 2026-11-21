@@ -270,3 +270,22 @@ export const tips: Tip[] = [
 export function getTipById(tipId: string): Tip | undefined {
   return tips.find((tip) => tip.id === tipId);
 }
+
+/**
+ * 숫자 말장난 꿀팁이 가리키는 사건 이름 (암기 카드 앞면 "○○은 몇 년?"에 사용).
+ * 숫자 꿀팁을 추가하면 여기에도 꼭 추가한다. 연도는 각 꿀팁의 year와 같다.
+ */
+export const tipYearEvents: Record<string, string> = {
+  "tip-three-kingdoms-003": "살수 대첩", // 612
+  "tip-north-south-001": "발해 건국", // 698
+  "tip-north-south-002": "장보고의 청해진 설치", // 828
+  "tip-goryeo-001": "고려 건국", // 918
+  "tip-goryeo-002": "광종의 과거제 실시", // 958
+  "tip-goryeo-003": "서희의 외교 담판", // 993
+  "tip-joseon-late-001": "임진왜란", // 1592
+  "tip-joseon-late-005": "대동법 실시", // 1608
+  "tip-modern-002": "갑신정변", // 1884
+  "tip-modern-004": "을사늑약", // 1905
+  "tip-colonial-001": "3·1 운동", // 1919
+  "tip-contemporary-001": "4·19 혁명", // 1960
+};
