@@ -35,6 +35,27 @@ function priority(stat: QuestionStat | undefined, now: number): number {
   return isInWrongNote(stat) ? p / 2 : p;
 }
 
+const questionById = new Map(allQuestions.map((q) => [q.id, q]));
+
+/**
+ * 약점 순위 (퀴즈 "약점 집중"과 대시보드 "약점 TOP 5"가 같은 기준을 쓴다).
+ * 푼 문제 중 오답노트 문제 먼저 → 기억 확률이 낮은 순. 데이터에 없는 문제 기록은 뺀다.
+ */
+export function rankWeakStats(
+  stats: StatMap,
+  now: number = Date.now(),
+): QuestionStat[] {
+  return Object.values(stats)
+    .filter((stat) => questionById.has(stat.questionId))
+    .map((stat) => ({
+      stat,
+      note: isInWrongNote(stat) ? 0 : 1,
+      p: retention(stat, now),
+    }))
+    .sort((a, b) => a.note - b.note || a.p - b.p)
+    .map(({ stat }) => stat);
+}
+
 /** 실제로 존재하는 문제의 풀이 기록이 하나라도 있는지 (약점 집중 버튼 활성화용) */
 export function hasStudyRecord(stats: StatMap): boolean {
   return allQuestions.some((q) => stats[q.id] !== undefined);
@@ -52,15 +73,13 @@ export function buildQuizSet(
   now: number = Date.now(),
 ): Question[] {
   if (mode === "weak") {
-    const solved = allQuestions.filter((q) => stats[q.id] !== undefined);
-    const ranked = [...solved].sort((a, b) => {
-      const sa = stats[a.id];
-      const sb = stats[b.id];
-      const noteA = isInWrongNote(sa) ? 0 : 1;
-      const noteB = isInWrongNote(sb) ? 0 : 1;
-      return noteA - noteB || retention(sa, now) - retention(sb, now);
-    });
-    return shuffle(ranked.slice(0, count));
+    const ranked = rankWeakStats(stats, now)
+      .slice(0, count)
+      .flatMap((stat) => {
+        const q = questionById.get(stat.questionId);
+        return q ? [q] : [];
+      });
+    return shuffle(ranked);
   }
 
   const pool =

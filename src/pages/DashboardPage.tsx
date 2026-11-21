@@ -52,7 +52,7 @@ function DashboardPage({ onNavigate }: PageProps) {
               📜
             </p>
             <p className="mt-3 text-lg font-bold">첫 퀴즈를 풀어 보세요</p>
-            <p className="mt-1 text-sm break-keep text-muted">
+            <p className="mt-1 text-sm text-muted">
               문제를 풀면 학습 기록, 시대별 정답률, 기억 상태가 여기에 쌓여요.
             </p>
             <Button

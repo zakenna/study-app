@@ -5,7 +5,8 @@ import GlassCard from "../components/ui/GlassCard";
 import ProgressBar from "../components/ui/ProgressBar";
 import { questions as allQuestions } from "../data/questions";
 import { ERA_LABELS } from "../lib/labels";
-import { getWeakQuestions, retention } from "../lib/memory";
+import { retention } from "../lib/memory";
+import { rankWeakStats } from "../lib/quiz";
 import { isInWrongNote } from "../lib/storage";
 import type { QuestionStat } from "../types";
 
@@ -34,7 +35,8 @@ function DashboardMemory({
       ? retentions.reduce((sum, p) => sum + p, 0) / retentions.length
       : 0;
   const forgetting = retentions.filter((p) => p < 0.5).length;
-  const weakest = getWeakQuestions(solved, 5, now);
+  // 퀴즈 "약점 집중"과 같은 기준: 오답노트 문제 먼저 → 기억 확률 낮은 순
+  const weakest = rankWeakStats(stats, now).slice(0, 5);
 
   return (
     <GlassCard>
@@ -54,16 +56,14 @@ function DashboardMemory({
           />
         </div>
         <div className="rounded-xl border border-line bg-canvas/40 p-3">
-          <p className="text-xs break-keep text-muted">
-            곧 잊을 문제 (50% 미만)
-          </p>
+          <p className="text-xs text-muted">곧 잊을 문제 (50% 미만)</p>
           <p
             className={`mt-1 text-2xl font-bold tabular-nums ${forgetting > 0 ? "text-danger" : ""}`}
           >
             {forgetting}
             <span className="text-sm font-medium text-muted">개</span>
           </p>
-          <p className="mt-2 text-[11px] break-keep text-muted">
+          <p className="mt-2 text-[11px] text-muted">
             {forgetting > 0
               ? "오늘 복습하면 다시 올라가요"
               : "모두 잘 기억하고 있어요"}

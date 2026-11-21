@@ -223,9 +223,7 @@ function SummaryCard({
         {shown}
         <span className="ml-0.5 text-xs font-medium text-muted">{unit}</span>
       </p>
-      <p className="text-[11px] leading-tight break-keep text-muted sm:text-xs">
-        {label}
-      </p>
+      <p className="text-[11px] leading-tight text-muted sm:text-xs">{label}</p>
     </GlassCard>
   );
 }

@@ -26,5 +26,8 @@
 
   body {
     @apply min-h-svh bg-canvas font-sans text-ink antialiased;
+    /* 한국어가 단어 중간에서 끊기지 않도록 어절 단위로 줄바꿈 */
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 }
