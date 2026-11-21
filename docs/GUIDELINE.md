@@ -140,6 +140,7 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 | `studyapp:tipVotes` | `TipVote[]` |
 | `studyapp:timelineBest` | `number` (타임라인 순서 맞추기 연속 성공 최고 기록) |
 | `studyapp:examResults` | `ExamResult[]` (기출 OMR 회차별 응시 기록: 점수·급수·답안·걸린 시간) |
+| `studyapp:examDraft` (sessionStorage) | 기출 OMR 응시 중 임시 저장 `{ examId, answers, remaining, savedAt }` — 브라우저 탭을 닫으면 사라짐, 제출·그만두기 때 삭제 |
 | `studyapp:matchBest` | `Record<쌍 수, 초>` (인물 매칭 쌍 수별 최단 시간, 예: `{ "4": 21 }`) |
 
 다른 키도 `studyapp:` 접두어를 쓰고, 팀장이 `storage.ts`에서 정의한다.

@@ -251,3 +251,48 @@ export function saveExamResult(result: ExamResult): void {
   write(STORAGE_KEYS.examResults, [...getExamResults(), result]);
   notifyChange();
 }
+
+/* ---------- 기출 OMR 응시 임시 저장 (sessionStorage, 3-4) ---------- */
+// 브라우저 탭을 닫으면 사라지는 임시 저장. 다른 화면(탭)에 갔다 와도 이어서 응시할 수 있게 한다.
+
+export const SESSION_KEYS = {
+  examDraft: "studyapp:examDraft",
+} as const;
+
+export interface ExamDraft {
+  examId: string;
+  answers: number[]; // 문항 순서대로 0(빈칸) 또는 1~5
+  remaining: number; // 남은 시간(초)
+  savedAt: number; // ms 타임스탬프
+}
+
+export function getExamDraft(): ExamDraft | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEYS.examDraft);
+    if (!raw) return null;
+    const draft = JSON.parse(raw) as ExamDraft;
+    return typeof draft?.examId === "string" &&
+      Array.isArray(draft.answers) &&
+      Number.isFinite(draft.remaining)
+      ? draft
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveExamDraft(draft: ExamDraft): void {
+  try {
+    sessionStorage.setItem(SESSION_KEYS.examDraft, JSON.stringify(draft));
+  } catch {
+    // 저장이 막힌 환경이면 임시 저장 없이 진행
+  }
+}
+
+export function clearExamDraft(): void {
+  try {
+    sessionStorage.removeItem(SESSION_KEYS.examDraft);
+  } catch {
+    // 무시
+  }
+}

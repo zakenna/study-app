@@ -6,9 +6,12 @@ import Button from "../components/ui/Button";
 import ProgressBar from "../components/ui/ProgressBar";
 import { EXAM_MINUTES, type Exam } from "../data/exams";
 import type { ExamAnswers } from "../lib/exam";
+import { saveExamDraft } from "../lib/storage";
 
 interface ExamSheetProps {
   exam: Exam;
+  /** 이어서 풀기: 임시 저장된 답안과 남은 시간 */
+  resume?: { answers: ExamAnswers; remaining: number };
   onSubmit: (answers: ExamAnswers, durationSec: number) => void;
   onQuit: () => void;
 }
@@ -22,11 +25,13 @@ const formatClock = (sec: number) =>
 type Dialog = { kind: "submit"; blanks: number[] } | { kind: "quit" } | null;
 
 /** 2단계: ⏱️ 80분 타이머 + OMR 50문항 */
-function ExamSheet({ exam, onSubmit, onQuit }: ExamSheetProps) {
+function ExamSheet({ exam, resume, onSubmit, onQuit }: ExamSheetProps) {
   const [answers, setAnswers] = useState<ExamAnswers>(() =>
-    exam.questions.map(() => 0),
+    exam.questions.map((_, i) => resume?.answers[i] ?? 0),
   );
-  const [remaining, setRemaining] = useState(TOTAL_SEC);
+  const [remaining, setRemaining] = useState(() =>
+    Math.min(TOTAL_SEC, Math.max(0, resume?.remaining ?? TOTAL_SEC)),
+  );
   const [paused, setPaused] = useState(false);
   const [dialog, setDialog] = useState<Dialog>(null);
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -42,6 +47,11 @@ function ExamSheet({ exam, onSubmit, onQuit }: ExamSheetProps) {
     );
     return () => window.clearInterval(id);
   }, [paused, timeUp, dialog]);
+
+  // 답안·남은 시간이 바뀔 때마다 임시 저장 (다른 탭에 갔다 와도 이어서 응시). 제출·그만두기 때 상위에서 지운다
+  useEffect(() => {
+    saveExamDraft({ examId: exam.id, answers, remaining, savedAt: Date.now() });
+  }, [exam.id, answers, remaining]);
 
   const mark = (index: number, choice: number) =>
     setAnswers((prev) =>
@@ -269,7 +279,7 @@ function ExamSheet({ exam, onSubmit, onQuit }: ExamSheetProps) {
 }
 
 /** 확인 창 (Esc로 닫기) */
-function ConfirmDialog({
+export function ConfirmDialog({
   onClose,
   children,
 }: {

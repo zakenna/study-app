@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import type { Exam } from "../data/exams";
 import { scoreExam, type ExamAnswers, type ExamScore } from "../lib/exam";
-import { getExamResults, saveExamResult } from "../lib/storage";
+import { clearExamDraft, getExamResults, saveExamResult } from "../lib/storage";
 import type { PageProps } from "../types";
 import ExamResultView from "./ExamPage.Result";
 import ExamSelect from "./ExamPage.Select";
@@ -10,7 +10,12 @@ import ExamSheet from "./ExamPage.Sheet";
 
 type Phase =
   | { name: "select" }
-  | { name: "sheet"; exam: Exam; runId: number }
+  | {
+      name: "sheet";
+      exam: Exam;
+      runId: number;
+      resume?: { answers: ExamAnswers; remaining: number };
+    }
   | {
       name: "result";
       exam: Exam;
@@ -24,12 +29,17 @@ type Phase =
 function ExamPage({ onNavigate }: PageProps) {
   const [phase, setPhase] = useState<Phase>({ name: "select" });
 
-  const start = (exam: Exam) => {
-    setPhase({ name: "sheet", exam, runId: Date.now() });
+  const start = (
+    exam: Exam,
+    resume?: { answers: ExamAnswers; remaining: number },
+  ) => {
+    if (!resume) clearExamDraft(); // 새로 시작이면 지난 임시 저장을 지운다
+    setPhase({ name: "sheet", exam, runId: Date.now(), resume });
     window.scrollTo({ top: 0 });
   };
 
   const submit = (exam: Exam, answers: ExamAnswers, durationSec: number) => {
+    clearExamDraft();
     const result = scoreExam(exam, answers);
     // 클릭 처리 안에서 이전 기록을 한 번 읽어 최고 점수 경신 여부를 판단
     const previousBest = Math.max(
@@ -74,10 +84,14 @@ function ExamPage({ onNavigate }: PageProps) {
         {phase.name === "sheet" && (
           <ExamSheet
             exam={phase.exam}
+            resume={phase.resume}
             onSubmit={(answers, durationSec) =>
               submit(phase.exam, answers, durationSec)
             }
-            onQuit={() => setPhase({ name: "select" })}
+            onQuit={() => {
+              clearExamDraft();
+              setPhase({ name: "select" });
+            }}
           />
         )}
         {phase.name === "result" && (
