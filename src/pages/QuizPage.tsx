@@ -1,37 +1,86 @@
-import { ListTodo } from "lucide-react";
-import Badge from "../components/ui/Badge";
-import GlassCard from "../components/ui/GlassCard";
+import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
+import type { PageProps } from "../App";
+import {
+  buildQuizSet,
+  shuffle,
+  snapshotRetention,
+  type QuizMode,
+} from "../lib/quiz";
+import { getStats } from "../lib/storage";
+import type { Question } from "../types";
+import QuizPlay, { type AnswerRecord } from "./QuizPage.Play";
+import QuizResult from "./QuizPage.Result";
+import QuizSelect from "./QuizPage.Select";
 
-// 뼈대 단계의 자리 표시용 화면. 아래 TODO를 구현하면서 자유롭게 바꾼다.
-const TODOS = [
-  "시대 선택 (lib/labels의 ERAS, ERA_LABELS)",
-  "문제 뽑기·채점 로직 (lib/quiz.ts)",
-  "4지선다 풀이, 정답·오답 표시 (정답은 가벼운 축하, 오답은 흔들림)",
-  "해설 표시",
-  "오답이거나 해설을 열면 TipCard 표시 (data/tips의 getTipById)",
-  "문제를 풀 때마다 recordAnswer 호출",
-];
+type Phase =
+  | { name: "select" }
+  | {
+      name: "play";
+      quiz: Question[];
+      retentionAtStart: Record<string, number | null>;
+      runId: number;
+    }
+  | { name: "result"; answers: AnswerRecord[]; maxCombo: number };
 
-function QuizPage() {
+/** 시대별 퀴즈: 선택 → 문제 → 결과 */
+function QuizPage({ onNavigate }: PageProps) {
+  const [phase, setPhase] = useState<Phase>({ name: "select" });
+
+  const startQuiz = (quiz: Question[]) => {
+    if (quiz.length === 0) return;
+    // 클릭 처리 안에서 한 번 읽는다 (렌더링 중 읽기 금지 규칙, GUIDELINE 3-5)
+    const stats = getStats();
+    setPhase({
+      name: "play",
+      quiz,
+      retentionAtStart: snapshotRetention(quiz, stats),
+      runId: Date.now(),
+    });
+    window.scrollTo({ top: 0 });
+  };
+
+  const handleStart = (mode: QuizMode) => startQuiz(buildQuizSet(mode));
+
+  const handleRetryWrong = (answers: AnswerRecord[]) =>
+    startQuiz(
+      shuffle(answers.filter((a) => !a.isCorrect).map((a) => a.question)),
+    );
+
   return (
-    <GlassCard>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xl font-bold">시대별 퀴즈</h2>
-        <Badge tone="primary">준비 중</Badge>
-      </div>
-      <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-muted">
-        <ListTodo size={16} aria-hidden />
-        TODO
-      </p>
-      <ul className="space-y-2 text-sm text-muted">
-        {TODOS.map((todo) => (
-          <li key={todo} className="flex gap-2">
-            <span aria-hidden>☐</span>
-            <span>{todo}</span>
-          </li>
-        ))}
-      </ul>
-    </GlassCard>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={phase.name === "play" ? `play-${phase.runId}` : phase.name}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.25 }}
+      >
+        {phase.name === "select" && <QuizSelect onStart={handleStart} />}
+
+        {phase.name === "play" && (
+          <QuizPlay
+            quiz={phase.quiz}
+            retentionAtStart={phase.retentionAtStart}
+            onQuit={() => setPhase({ name: "select" })}
+            onFinish={(answers, maxCombo) => {
+              setPhase({ name: "result", answers, maxCombo });
+              window.scrollTo({ top: 0 });
+            }}
+          />
+        )}
+
+        {phase.name === "result" && (
+          <QuizResult
+            answers={phase.answers}
+            maxCombo={phase.maxCombo}
+            onRetryWrong={() => handleRetryWrong(phase.answers)}
+            onPickAnother={() => setPhase({ name: "select" })}
+            onGoDashboard={() => onNavigate("dashboard")}
+          />
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
