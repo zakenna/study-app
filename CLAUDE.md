@@ -17,7 +17,7 @@
 - 커밋 메시지는 README의 `타입: 한글 설명` 형식을 따른다.
 
 ### 코드
-- 지시받은 담당 파일만 수정한다. 🔒 파일(`App.tsx`, `main.tsx`, `src/types/`, 설정 파일, `package.json`)을 바꿔야 하면 **수정하기 전에** 이유를 말하고 허락을 구한다.
+- 지시받은 담당 파일만 수정한다. 🔒 파일(`App.tsx`, `main.tsx`, `src/types/`, `src/lib/storage.ts`, `src/lib/memory.ts`, `src/components/ui/`, 설정 파일, `package.json`)을 바꿔야 하면 **수정하기 전에** 이유를 말하고 허락을 구한다.
 - 새 패키지는 설치 전에 허락을 구한다.
 - 커밋 전에 `npm run lint`와 `npm run build`를 실행하고, 둘 다 통과해야 커밋한다.
 

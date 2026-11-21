@@ -15,7 +15,7 @@ README.md(Git 규칙)와 함께 따른다. 내용이 충돌하면 이 문서를 
 |---|---|
 | 시대별 퀴즈 | 시대를 고르고 4지선다로 풀기. 정답·오답 표시, **해설** 제공 |
 | 💡 암기 꿀팁 | 문제를 틀리거나 해설을 열면 **숫자 말장난·두문자 꿀팁** 카드 표시 |
-| 오답노트 | 틀린 문제만 모아서 다시 풀기 |
+| 오답노트 | 틀린 문제만 모아서 다시 풀기 (규칙은 3장 참고) |
 | 대시보드 | 시험 D-day, 오늘 푼 문제 수, 시대별 정답률, 🔥 연속 학습일 |
 | 온보딩 | 첫 방문 시 이름, 시험 날짜, 목표 급수(심화/기본), 하루 목표 문제 수 입력 |
 
@@ -41,6 +41,7 @@ README.md(Git 규칙)와 함께 따른다. 내용이 충돌하면 이 문서를 
 - 화면 전환: 라우터 없이 `App.tsx`의 탭 상태로
 - 배포: Vercel 무료 플랜
 - **비용 0원.** 결제나 API 키가 필요한 것은 쓰지 않는다
+- 위 패키지 설치는 **팀장 뼈대(`feature/skeleton`)에서 한 번에** 한다. 다른 브랜치에서 설치하지 않는다.
 
 ---
 
@@ -60,7 +61,9 @@ export type Era =
 
 export interface Tip {
   id: string;
-  text: string;        // "이러구 있으면(1592) 안 된다, 나라가 위기다!"
+  era: Era;
+  year?: number;       // 관련 연도 (숫자 말장난이면 필수로 적는다)
+  text: string;        // "일(1)본군이 오(5)자, 구(9)국의 영웅 이(2)순신!"
   kind: "number" | "acronym" | "story"; // 숫자 말장난 / 두문자 / 이야기
 }
 
@@ -71,7 +74,7 @@ export interface Question {
   options: [string, string, string, string];
   answer: 0 | 1 | 2 | 3;
   explanation: string; // 해설 (필수)
-  tip?: Tip;           // 암기 꿀팁
+  tipId?: string;      // 암기 꿀팁 (src/data/tips.ts의 Tip.id)
   year?: number;       // 관련 연도 (타임라인에 사용)
   tags?: string[];     // 인물, 사건 키워드
 }
@@ -81,16 +84,50 @@ export interface PersonMatch   { id: string; person: string; deed: string; era: 
 
 export interface QuestionStat {
   questionId: string; correct: number; wrong: number;
-  strength: number;     // 망각곡선용 (일 단위)
-  lastReviewedAt: number;
+  correctStreak: number;  // 연속 정답 수 (오답이면 0으로)
+  strength: number;       // 망각곡선용, 단위: 일
+  lastReviewedAt: number; // ms 타임스탬프 (Date.now())
 }
 export interface Profile {
-  name: string; examDate?: string; level: "advanced" | "basic"; dailyGoal: number;
+  name: string;
+  examDate?: string;      // "YYYY-MM-DD"
+  level: "advanced" | "basic";
+  dailyGoal: number;
 }
 export interface StudyLog { date: string; solved: number; correct: number } // "YYYY-MM-DD"
+export interface TipVote  { tipId: string; count: number } // 👍 "외워졌어요" 수
 ```
 
 타입이 더 필요하면 **직접 추가하지 말고 팀장에게 요청**한다.
+
+### 3-1. 시대 경계
+문제·꿀팁·타임라인의 `era`는 아래 기준으로 분류한다.
+
+| Era | 범위 |
+|---|---|
+| `joseon-early` | 1392 조선 건국 ~ 임진왜란 전 |
+| `joseon-late` | 1592 임진왜란 ~ 1863 |
+| `modern` | 1863 흥선대원군 집권 ~ 1910 (대한제국 포함) |
+| `colonial` | 1910 ~ 1945.8.15 |
+| `contemporary` | 1945 광복 이후 (광복 ~ 정부 수립 포함) |
+
+### 3-2. 오답노트 규칙
+- **한 번이라도 틀렸고(`wrong > 0`) `correctStreak < 2`인 문제**가 오답노트에 들어간다.
+- 정답이면 `correctStreak + 1`, 오답이면 `correctStreak = 0`.
+- **2번 연속 맞히면** 오답노트에서 빠진다. 다시 틀리면 다시 들어온다.
+
+### 3-3. 망각곡선 (`src/lib/memory.ts`)
+- `strength` 초깃값은 **1**(일). 정답이면 **×2.5**, 오답이면 **1로 리셋**.
+- 기억 확률 = `Math.exp(-경과일 / strength)`. 경과일 = `(Date.now() - lastReviewedAt) / 86_400_000`
+- 팀장이 뼈대에서 `retention`(기억 확률), `updateStrength`(풀이 후 strength 갱신),
+  `getWeakQuestions`(약한 문제 뽑기)를 구현한다. C는 가져다 쓰고, 수정이 필요하면 팀장에게 요청한다.
+
+### 3-4. localStorage 키
+| 키 | 값 |
+|---|---|
+| `studyapp:tipVotes` | `TipVote[]` |
+
+다른 키도 `studyapp:` 접두어를 쓰고, 팀장이 `storage.ts`에서 정의한다.
 
 ---
 
@@ -101,14 +138,14 @@ export interface StudyLog { date: string; solved: number; correct: number } // "
 3. **모든 문제에 해설 필수.** 왜 정답인지, 오답 보기는 무엇인지 한두 줄로.
 4. **꿀팁은 사실과 정확히 연결.** 연도 말장난이면 숫자가 실제 연도와 일치해야 한다.
 5. **표현 주의.** 특정 국가·민족·인물을 비하하거나 혐오하는 표현 금지. 역사적 비극을 가볍게 희화화하지 않는다.
-6. 데이터 위치: `src/data/questions/<era>.ts`, `src/data/timeline.ts`, `src/data/persons.ts`
+6. 데이터 위치: `src/data/questions/<era>.ts`, `src/data/tips.ts`, `src/data/timeline.ts`, `src/data/persons.ts`
 7. 목표 분량: 시대당 문제 **5개 이상**(총 45개+), 꿀팁은 문제의 **절반 이상**
 8. Claude Code가 콘텐츠를 만들면 보고서에 **"검증이 필요한 항목"**을 반드시 따로 적는다.
 
 ### 꿀팁 예시
 | 종류 | 예시 |
 |---|---|
-| 숫자 말장난 | 1592 임진왜란: "이러구 있으면(1592) 안 된다, 나라가 위기다!" |
+| 숫자 말장난 | 1592 임진왜란: "일(1)본군이 오(5)자, 구(9)국의 영웅 이(2)순신!" |
 | 숫자 말장난 | 1919 3·1 운동: "일어나 구하자! 일어나 구하자!(1919)" |
 | 두문자 | 조선 왕 순서: "태정태세문단세 예성연중인명선…" |
 
@@ -121,13 +158,13 @@ src/
 ├── types/              🔒 팀장
 ├── lib/
 │   ├── storage.ts      🔒 팀장   localStorage 읽기/쓰기 전부
-│   ├── memory.ts       🔒 팀장   망각곡선 계산
+│   ├── memory.ts       🔒 팀장   망각곡선 계산 (retention, updateStrength, getWeakQuestions)
 │   └── quiz.ts            A      문제 뽑기·채점 로직
-├── components/ui/      🔒 팀장   GlassCard, Button, Badge, ProgressBar 등 공용 부품
-├── data/                  D      문제·타임라인·인물 데이터
+├── components/ui/      🔒 팀장   GlassCard, Button, Badge, ProgressBar, TipCard 등 공용 부품
+├── data/                  D      문제·꿀팁(tips.ts)·타임라인·인물 데이터
 ├── pages/
 │   ├── DashboardPage.tsx  D
-│   ├── QuizPage.tsx       A      (+ 꿀팁 팝업 컴포넌트)
+│   ├── QuizPage.tsx       A
 │   ├── WrongNotePage.tsx  C
 │   ├── TipsPage.tsx       C
 │   ├── TimelinePage.tsx   B
@@ -138,14 +175,20 @@ src/
 | 담당 | 브랜치 예시 | 맡는 것 |
 |---|---|---|
 | 팀장 | `feature/skeleton` | 뼈대, 디자인 시스템, 공용 타입·저장, 배포, PR 병합 |
-| A | `feature/quiz` | 시대별 퀴즈, 채점, 해설, 💡 꿀팁 팝업 |
+| A | `feature/quiz` | 시대별 퀴즈, 채점, 해설, 💡 꿀팁 카드 표시(`TipCard` 사용) |
 | B | `feature/timeline`, `feature/match` | 타임라인 순서 맞추기, 인물↔사건 매칭 |
 | C | `feature/wrong-note`, `feature/tips` | 오답노트, 망각곡선 복습, 꿀팁 모음 |
 | D | `feature/data`, `feature/dashboard` | 콘텐츠 데이터, 대시보드 |
 
+### 작업 순서
+1. **팀장 뼈대(`feature/skeleton`)가 다른 작업보다 먼저 병합된다.**
+   뼈대 범위: 패키지 설치, 테마 변수, 공용 타입, `storage.ts`, `memory.ts`, `components/ui`(TipCard 포함), `App.tsx`(탭·온보딩)
+2. 뼈대 병합 후 A~D가 각자 브랜치에서 작업을 시작한다.
+
+### 규칙
 - 자기 담당 파일만 수정한다. 🔒 파일이 필요하면 단톡방에서 팀장에게 요청.
-- 공용 부품은 새로 만들지 말고 `components/ui`를 가져다 쓴다.
-- 페이지 내부에서만 쓰는 컴포넌트는 같은 폴더에 `QuizPage.TipPopup.tsx`처럼 이름 앞에 페이지명을 붙인다.
+- 공용 부품은 새로 만들지 말고 `components/ui`를 가져다 쓴다. 꿀팁 카드는 어느 화면이든 `components/ui/TipCard.tsx`를 쓴다.
+- 페이지 내부에서만 쓰는 컴포넌트는 같은 폴더에 `QuizPage.ResultSummary.tsx`처럼 이름 앞에 페이지명을 붙인다.
 
 ---
 
@@ -153,8 +196,22 @@ src/
 
 - 🎨 **색상 팔레트는 팀장이 확정 후 공지 예정.** 그 전까지는 아래 원칙만 지킨다.
 - 색상 값(`#1e293b` 같은 hex)을 컴포넌트에 **직접 쓰지 않는다.** 반드시 테마 변수(Tailwind 테마 토큰 / CSS 변수)를 사용한다. 팔레트가 바뀌면 한 곳만 고치면 되도록.
+- 테마 변수 이름 (값은 뼈대에서 임시 쿨톤으로 정하고, 팔레트 확정 시 값만 바꾼다):
+
+  | 변수 | 용도 | Tailwind 예시 |
+  |---|---|---|
+  | `--color-bg` | 화면 배경 | `bg-bg` |
+  | `--color-surface` | 카드·패널 배경 | `bg-surface` |
+  | `--color-border` | 테두리 | `border-border` |
+  | `--color-text` | 기본 글자 | `text-text` |
+  | `--color-muted` | 보조 글자 | `text-muted` |
+  | `--color-primary` | 주요 버튼·강조 | `bg-primary` |
+  | `--color-accent` | 꿀팁 등 포인트 | `text-accent` |
+  | `--color-success` | 정답 | `text-success` |
+  | `--color-danger` | 오답 | `text-danger` |
+
 - 카드, 버튼, 배지는 `components/ui` 부품을 사용해서 통일감을 유지한다.
-- 폰트: Pretendard
+- 폰트: Pretendard. `index.html`에서 jsDelivr CDN으로 불러온다 (뼈대에서 적용).
 - **모바일 우선.** 375px 폭에서 깨지지 않아야 한다.
 - 애니메이션은 짧고 부드럽게(0.2~0.4초). 정답 시 가벼운 축하 효과, 오답 시 흔들림 정도.
 
