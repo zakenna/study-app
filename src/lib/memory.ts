@@ -36,22 +36,6 @@ export function updateStrength(strength: number, isCorrect: boolean): number {
 }
 
 /**
- * 기억 확률이 낮은 순으로 문제 기록을 돌려준다 (약한 문제 우선 출제용).
- * 한 번도 안 푼 문제는 기록이 없으므로 포함되지 않는다.
- */
-export function getWeakQuestions(
-  stats: QuestionStat[],
-  limit: number = 10,
-  now: number = Date.now(),
-): QuestionStat[] {
-  return stats
-    .map((stat) => ({ stat, p: retention(stat, now) }))
-    .sort((a, b) => a.p - b.p)
-    .slice(0, Math.max(0, limit))
-    .map(({ stat }) => stat);
-}
-
-/**
  * 지금부터 days일 뒤까지 하루 단위 기억 확률 (망각곡선 그래프용).
  * 결과의 day 0 = 오늘(지금), percent = 0~100 정수.
  */

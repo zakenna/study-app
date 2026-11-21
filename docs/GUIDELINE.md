@@ -123,8 +123,10 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 ### 3-3. 망각곡선 (`src/lib/memory.ts`)
 - `strength` 초깃값은 **1**(일). 정답이면 **×2.5**, 오답이면 **1로 리셋**.
 - 기억 확률 = `Math.exp(-경과일 / strength)`. 경과일 = `(Date.now() - lastReviewedAt) / 86_400_000`
-- 팀장이 뼈대에서 `retention`(기억 확률), `updateStrength`(풀이 후 strength 갱신),
-  `getWeakQuestions`(약한 문제 뽑기)를 구현한다. 화면에서는 가져다 쓰고, 수정이 필요하면 팀장 승인 후 고친다.
+- `memory.ts`: `retention`(기억 확률), `updateStrength`(풀이 후 strength 갱신), `projectRetention`(앞으로 n일 기억 확률, 그래프용).
+- **약점 순위는 `lib/quiz.ts`의 `rankWeakStats`** 하나로 정한다: 오답노트 문제 먼저 → 기억 확률 낮은 순.
+  퀴즈 "약점 집중"과 대시보드 "약점 TOP 5"가 같은 기준을 쓴다.
+- 화면에서는 가져다 쓰고, 수정이 필요하면 팀장 승인 후 고친다.
 
 ### 3-4. localStorage 키
 | 키 | 값 |
@@ -176,7 +178,7 @@ src/
 ├── lib/
 │   ├── storage.ts      🔒       localStorage 읽기/쓰기 전부 (쓰면 "studyapp:change" 이벤트)
 │   ├── useStudyData.ts 🔒       저장 데이터 구독 훅 — 화면은 이걸로 읽는다 (3-5)
-│   ├── memory.ts       🔒       망각곡선 계산 (retention, updateStrength, getWeakQuestions)
+│   ├── memory.ts       🔒       망각곡선 계산 (retention, updateStrength, projectRetention)
 │   ├── date.ts         🔒       날짜 키(YYYY-MM-DD), D-day, 연속 학습일
 │   ├── useCountUp.ts   🔒       숫자가 올라가는 애니메이션 훅 (결과·요약 카드)
 │   ├── labels.ts       🔒       ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS, formatYear
