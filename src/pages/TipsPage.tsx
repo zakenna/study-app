@@ -5,8 +5,8 @@ import GlassCard from "../components/ui/GlassCard";
 // 뼈대 단계의 자리 표시용 화면. 아래 TODO를 구현하면서 자유롭게 바꾼다.
 const TODOS = [
   "전체 꿀팁 목록 (data/tips, TipCard)",
-  "👍 외워졌어요 (voteTip, getTipVotes)",
-  "외워졌어요 수로 정렬",
+  "👍 외워졌어요 토글 (toggleTipMemorized, isTipMemorized)",
+  "외운 꿀팁 / 아직 못 외운 꿀팁 필터",
   "시대별 필터",
 ];
 

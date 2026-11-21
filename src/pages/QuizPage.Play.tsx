@@ -8,8 +8,12 @@ import ProgressBar from "../components/ui/ProgressBar";
 import TipCard from "../components/ui/TipCard";
 import { getTipById } from "../data/tips";
 import { ERA_LABELS } from "../lib/labels";
-import { isCorrectChoice } from "../lib/quiz";
-import { recordAnswer, voteTip } from "../lib/storage";
+import { isCorrectChoice, type QuestionSnapshot } from "../lib/quiz";
+import {
+  isTipMemorized,
+  recordAnswer,
+  toggleTipMemorized,
+} from "../lib/storage";
 import { useStudyData } from "../lib/useStudyData";
 import type { Question } from "../types";
 
@@ -21,23 +25,30 @@ export interface AnswerRecord {
 
 interface QuizPlayProps {
   quiz: Question[];
-  /** 퀴즈 시작 시점의 기억 확률 (null = 새 문제) */
-  retentionAtStart: Record<string, number | null>;
+  /** 퀴즈 시작 시점의 문제 상태 (기억 확률, 복습 필요 여부) */
+  snapshot: Record<string, QuestionSnapshot>;
   onFinish: (answers: AnswerRecord[], maxCombo: number) => void;
   onQuit: () => void;
 }
 
 const OPTION_MARKS = ["①", "②", "③", "④"];
 
-function retentionBadge(p: number | null): { tone: BadgeTone; text: string } {
-  if (p === null) return { tone: "primary", text: "새 문제" };
+function statusBadge(snap: QuestionSnapshot | undefined): {
+  tone: BadgeTone;
+  text: string;
+} {
+  if (!snap || snap.retention === null)
+    return { tone: "primary", text: "새 문제" };
+  // 방금 틀린 문제는 공식상 기억 확률이 100%로 나오므로, 오답노트 문제는 "복습 필요"로 표시
+  if (snap.needsReview) return { tone: "danger", text: "복습 필요" };
+  const p = snap.retention;
   const percent = Math.round(p * 100);
   const tone: BadgeTone = p < 0.5 ? "danger" : p < 0.8 ? "accent" : "success";
   return { tone, text: `기억 확률 ${percent}%` };
 }
 
 /** 2단계: 문제 풀기 */
-function QuizPlay({ quiz, retentionAtStart, onFinish, onQuit }: QuizPlayProps) {
+function QuizPlay({ quiz, snapshot, onFinish, onQuit }: QuizPlayProps) {
   const { tipVotes } = useStudyData();
   const reduceMotion = useReducedMotion() ?? false;
 
@@ -56,10 +67,7 @@ function QuizPlay({ quiz, retentionAtStart, onFinish, onQuit }: QuizPlayProps) {
   const isCorrect = answered && isCorrectChoice(question, choice);
   const isLast = index === quiz.length - 1;
   const tip = question.tipId ? getTipById(question.tipId) : undefined;
-  const tipVoteCount = tip
-    ? (tipVotes.find((v) => v.tipId === tip.id)?.count ?? 0)
-    : 0;
-  const badge = retentionBadge(retentionAtStart[question.id] ?? null);
+  const badge = statusBadge(snapshot[question.id]);
 
   const choose = (selected: number) => {
     if (answered) return;
@@ -244,8 +252,8 @@ function QuizPlay({ quiz, retentionAtStart, onFinish, onQuit }: QuizPlayProps) {
                   <TipCard
                     key={tip.id}
                     tip={tip}
-                    votes={tipVoteCount}
-                    onVote={voteTip}
+                    memorized={isTipMemorized(tipVotes, tip.id)}
+                    onToggleMemorized={toggleTipMemorized}
                   />
                 )}
               </AnimatePresence>

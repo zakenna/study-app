@@ -1,14 +1,15 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import type { PageProps } from "../App";
 import {
   buildQuizSet,
   shuffle,
-  snapshotRetention,
+  shuffleOptions,
+  snapshotQuizState,
+  type QuestionSnapshot,
   type QuizMode,
 } from "../lib/quiz";
 import { getStats } from "../lib/storage";
-import type { Question } from "../types";
+import type { PageProps, Question } from "../types";
 import QuizPlay, { type AnswerRecord } from "./QuizPage.Play";
 import QuizResult from "./QuizPage.Result";
 import QuizSelect from "./QuizPage.Select";
@@ -18,7 +19,7 @@ type Phase =
   | {
       name: "play";
       quiz: Question[];
-      retentionAtStart: Record<string, number | null>;
+      snapshot: Record<string, QuestionSnapshot>;
       runId: number;
     }
   | { name: "result"; answers: AnswerRecord[]; maxCombo: number };
@@ -27,14 +28,16 @@ type Phase =
 function QuizPage({ onNavigate }: PageProps) {
   const [phase, setPhase] = useState<Phase>({ name: "select" });
 
-  const startQuiz = (quiz: Question[]) => {
-    if (quiz.length === 0) return;
+  const startQuiz = (questions: Question[]) => {
+    if (questions.length === 0) return;
+    // 풀 때마다 보기 순서를 섞는다 (위치 암기 방지). 정답 인덱스는 shuffleOptions가 다시 매핑
+    const quiz = questions.map((q) => shuffleOptions(q));
     // 클릭 처리 안에서 한 번 읽는다 (렌더링 중 읽기 금지 규칙, GUIDELINE 3-5)
     const stats = getStats();
     setPhase({
       name: "play",
       quiz,
-      retentionAtStart: snapshotRetention(quiz, stats),
+      snapshot: snapshotQuizState(quiz, stats),
       runId: Date.now(),
     });
     window.scrollTo({ top: 0 });
@@ -61,7 +64,7 @@ function QuizPage({ onNavigate }: PageProps) {
         {phase.name === "play" && (
           <QuizPlay
             quiz={phase.quiz}
-            retentionAtStart={phase.retentionAtStart}
+            snapshot={phase.snapshot}
             onQuit={() => setPhase({ name: "select" })}
             onFinish={(answers, maxCombo) => {
               setPhase({ name: "result", answers, maxCombo });

@@ -25,7 +25,7 @@ README.md(Git 규칙)와 함께 따른다. 내용이 충돌하면 이 문서를 
 | 타임라인 순서 맞추기 | 사건 카드 4~5장을 연도 순으로 드래그해서 정렬 |
 | 인물 ↔ 사건 짝 맞추기 | 카드 뒤집기 방식의 매칭 게임 |
 | 망각곡선 복습 | "지금 이 문제를 기억할 확률 62%" 표시, 약한 문제 우선 출제 |
-| 꿀팁 모음 | 전체 꿀팁 보기, 👍 "외워졌어요" 수로 정렬 |
+| 꿀팁 모음 | 전체 꿀팁 보기, 👍 "외워졌어요" 토글(꿀팁당 1회), 외운/못 외운 꿀팁 필터 |
 
 ### ⛔ 이번에 하지 않음
 로그인/서버(Supabase), 사진 OCR, 유료 API, 기출문제 원문 수록
@@ -95,7 +95,7 @@ export interface Profile {
   dailyGoal: number;
 }
 export interface StudyLog { date: string; solved: number; correct: number } // "YYYY-MM-DD"
-export interface TipVote  { tipId: string; count: number } // 👍 "외워졌어요" 수
+export interface TipVote  { tipId: string; count: number } // "외워졌어요" 토글: 외우면 1, 취소하면 항목 삭제
 ```
 
 타입이 더 필요하면 **직접 추가하지 말고 팀장에게 요청**한다.
@@ -138,7 +138,7 @@ export interface TipVote  { tipId: string; count: number } // 👍 "외워졌어
 ### 3-5. 데이터 읽기·쓰기 방법 ⭐
 - **화면(컴포넌트)은 저장 데이터를 `useStudyData()` 훅으로 읽는다.** (`src/lib/useStudyData.ts`)
   `const { profile, stats, logs, tipVotes } = useStudyData();`
-- **쓰기는 `storage.ts` 함수**(`recordAnswer`, `saveProfile`, `voteTip`)를 호출한다.
+- **쓰기는 `storage.ts` 함수**(`recordAnswer`, `saveProfile`, `toggleTipMemorized`)를 호출한다.
   쓰기가 끝나면 `"studyapp:change"` 이벤트가 발생하고, 훅을 쓰는 모든 화면(헤더의 🔥 등)이 즉시 다시 그려진다.
 - 컴포넌트에서 `getStats()` 같은 읽기 함수를 렌더링 중에 직접 부르지 않는다. 다른 화면의 변경이 반영되지 않는다.
   (클릭 처리 함수 안에서 한 번 읽는 것은 괜찮다)

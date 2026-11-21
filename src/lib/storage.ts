@@ -160,22 +160,27 @@ export function getStudyStreak(): number {
   return calcStudyStreak(getStudyLogs());
 }
 
-/* ---------- 꿀팁 👍 "외워졌어요" (3-4) ---------- */
+/* ---------- 꿀팁 "외워졌어요" 토글 (3-4) ---------- */
 
 export function getTipVotes(): TipVote[] {
   const votes = read<TipVote[]>(STORAGE_KEYS.tipVotes, []);
   return Array.isArray(votes) ? votes : [];
 }
 
-export function voteTip(tipId: string): TipVote[] {
+/** 외워졌어요 여부 (렌더링 중에는 useStudyData의 tipVotes를 넘겨서 쓴다) */
+export function isTipMemorized(votes: TipVote[], tipId: string): boolean {
+  return votes.some((vote) => vote.tipId === tipId && vote.count > 0);
+}
+
+/** 외워졌어요 토글 (꿀팁당 1회, 다시 누르면 취소). 바뀐 뒤의 외워짐 여부를 돌려준다 */
+export function toggleTipMemorized(tipId: string): boolean {
   const votes = getTipVotes();
-  const current = votes.find((vote) => vote.tipId === tipId);
-  const next = current
-    ? votes.map((vote) =>
-        vote.tipId === tipId ? { ...vote, count: vote.count + 1 } : vote,
-      )
-    : [...votes, { tipId, count: 1 }];
-  write(STORAGE_KEYS.tipVotes, next);
+  const wasMemorized = isTipMemorized(votes, tipId);
+  const others = votes.filter((vote) => vote.tipId !== tipId);
+  write(
+    STORAGE_KEYS.tipVotes,
+    wasMemorized ? others : [...others, { tipId, count: 1 }],
+  );
   notifyChange();
-  return next;
+  return !wasMemorized;
 }

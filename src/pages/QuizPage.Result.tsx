@@ -7,7 +7,7 @@ import GlassCard from "../components/ui/GlassCard";
 import TipCard from "../components/ui/TipCard";
 import { getTipById } from "../data/tips";
 import { ERA_LABELS } from "../lib/labels";
-import { voteTip } from "../lib/storage";
+import { isTipMemorized, toggleTipMemorized } from "../lib/storage";
 import { useStudyData } from "../lib/useStudyData";
 import type { AnswerRecord } from "./QuizPage.Play";
 
@@ -134,8 +134,8 @@ function QuizResult({
                 <TipCard
                   className="mt-3"
                   tip={tip}
-                  votes={tipVotes.find((v) => v.tipId === tip.id)?.count ?? 0}
-                  onVote={voteTip}
+                  memorized={isTipMemorized(tipVotes, tip.id)}
+                  onToggleMemorized={toggleTipMemorized}
                 />
               )}
             </GlassCard>

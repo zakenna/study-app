@@ -107,13 +107,41 @@ export function getEraProgress(era: Era, stats: StatMap): EraProgress {
   };
 }
 
-/** 퀴즈 시작 시점의 기억 확률 스냅숏 (null = 새 문제). 풀고 나면 값이 바뀌므로 시작할 때 고정해 둔다 */
-export function snapshotRetention(
+export interface QuestionSnapshot {
+  retention: number | null; // null = 새 문제
+  needsReview: boolean; // 오답노트에 있는 문제
+}
+
+/** 퀴즈 시작 시점의 문제 상태. 풀고 나면 값이 바뀌므로 시작할 때 고정해 둔다 */
+export function snapshotQuizState(
   quiz: Question[],
   stats: StatMap,
   now: number = Date.now(),
-): Record<string, number | null> {
+): Record<string, QuestionSnapshot> {
   return Object.fromEntries(
-    quiz.map((q) => [q.id, stats[q.id] ? retention(stats[q.id], now) : null]),
+    quiz.map((q) => {
+      const stat = stats[q.id];
+      return [
+        q.id,
+        {
+          retention: stat ? retention(stat, now) : null,
+          needsReview: stat ? isInWrongNote(stat) : false,
+        },
+      ];
+    }),
   );
+}
+
+/**
+ * 보기 순서를 섞은 새 문제 객체를 돌려준다 (id·해설은 그대로).
+ * answer는 원래 정답 보기가 옮겨 간 위치로 다시 매핑되므로 채점은 그대로 question.answer와 비교하면 된다.
+ */
+export function shuffleOptions(
+  question: Question,
+  random: () => number = Math.random,
+): Question {
+  const order = shuffle([0, 1, 2, 3], random);
+  const options = order.map((i) => question.options[i]) as Question["options"];
+  const answer = order.indexOf(question.answer) as Question["answer"];
+  return { ...question, options, answer };
 }

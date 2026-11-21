@@ -20,15 +20,7 @@ import QuizPage from "./pages/QuizPage";
 import TimelinePage from "./pages/TimelinePage";
 import TipsPage from "./pages/TipsPage";
 import WrongNotePage from "./pages/WrongNotePage";
-import type { Profile } from "./types";
-
-export type TabId =
-  "dashboard" | "quiz" | "wrong-note" | "tips" | "timeline" | "match";
-
-/** 모든 페이지가 받는 props. 다른 탭으로 이동할 때 onNavigate("dashboard")처럼 쓴다 */
-export interface PageProps {
-  onNavigate: (tab: TabId) => void;
-}
+import type { PageProps, Profile, TabId } from "./types";
 
 interface Tab {
   id: TabId;
