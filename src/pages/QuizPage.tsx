@@ -24,19 +24,27 @@ type Phase =
   | { name: "result"; answers: AnswerRecord[]; maxCombo: number };
 
 /** 시대별 퀴즈: 선택 → 문제 → 결과 */
-function QuizPage({ onNavigate }: PageProps) {
-  const [phase, setPhase] = useState<Phase>({ name: "select" });
+/** 문제 목록 → 플레이 단계 (보기 섞기 + 시작 상태 고정). stats는 여기서 한 번 읽는다 (GUIDELINE 3-5) */
+function playPhase(questions: Question[]): Phase | null {
+  if (questions.length === 0) return null;
+  const { quiz, snapshot } = prepareQuiz(questions, getStats());
+  return { name: "play", quiz, snapshot, runId: Date.now() };
+}
+
+function QuizPage({ onNavigate, intent }: PageProps) {
+  // 다른 화면에서 "○○ 시대 퀴즈로" 이동해 오면(intent.quizEra) 처음부터 그 시대 퀴즈로 시작한다.
+  // 탭에 들어올 때 한 번만 실행되는 초기값이라 렌더링마다 읽지 않는다
+  const [phase, setPhase] = useState<Phase>(
+    () =>
+      (intent?.quizEra && playPhase(buildQuizSet(intent.quizEra))) || {
+        name: "select",
+      },
+  );
 
   const startQuiz = (questions: Question[]) => {
-    if (questions.length === 0) return;
-    // 보기 섞기 + 시작 상태 고정. stats는 클릭 처리 안에서 한 번 읽는다 (GUIDELINE 3-5)
-    const { quiz, snapshot } = prepareQuiz(questions, getStats());
-    setPhase({
-      name: "play",
-      quiz,
-      snapshot,
-      runId: Date.now(),
-    });
+    const next = playPhase(questions);
+    if (!next) return;
+    setPhase(next);
     window.scrollTo({ top: 0 });
   };
 

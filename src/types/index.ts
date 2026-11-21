@@ -75,9 +75,16 @@ export interface TipVote {
 
 /** 화면(탭) 이름 */
 export type TabId =
-  "dashboard" | "quiz" | "wrong-note" | "tips" | "timeline" | "match";
+  "dashboard" | "quiz" | "exam" | "wrong-note" | "tips" | "timeline" | "match";
+
+/** 탭 이동과 함께 넘기는 의도 (예: 기출 결과에서 "고려 퀴즈로" → quizEra: "goryeo") */
+export interface NavIntent {
+  quizEra?: Era;
+}
 
 /** 모든 페이지가 받는 props. 다른 탭으로 이동할 때 onNavigate("dashboard")처럼 쓴다 */
 export interface PageProps {
-  onNavigate: (tab: TabId) => void;
+  onNavigate: (tab: TabId, intent?: NavIntent) => void;
+  /** 이 탭으로 올 때 함께 넘어온 의도 (한 번 쓰고 나면 다음 이동 때 사라짐) */
+  intent?: NavIntent;
 }

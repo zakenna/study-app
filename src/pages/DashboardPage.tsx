@@ -6,6 +6,7 @@ import { questions as allQuestions } from "../data/questions";
 import { useStudyData } from "../lib/useStudyData";
 import type { PageProps } from "../types";
 import DashboardEraChart from "./DashboardPage.EraChart";
+import DashboardExamCard from "./DashboardPage.ExamCard";
 import DashboardHero from "./DashboardPage.Hero";
 import DashboardMemory from "./DashboardPage.Memory";
 import DashboardStreak from "./DashboardPage.Streak";
@@ -13,7 +14,7 @@ import DashboardTipOfDay from "./DashboardPage.TipOfDay";
 
 /** 대시보드 (앱 첫 화면): 히어로 → 학습 기록 → 시대별 정답률 → 기억 상태 → 오늘의 꿀팁 */
 function DashboardPage({ onNavigate }: PageProps) {
-  const { profile, stats, logs, tipVotes } = useStudyData();
+  const { profile, stats, logs, tipVotes, examResults } = useStudyData();
   // 화면을 연 시점 기준으로 계산 (렌더링마다 값이 흔들리지 않게)
   const [now] = useState(() => Date.now());
 
@@ -37,6 +38,10 @@ function DashboardPage({ onNavigate }: PageProps) {
             />
             <DashboardTipOfDay tipVotes={tipVotes} now={now} />
           </div>
+          <DashboardExamCard
+            examResults={examResults}
+            onGoExam={() => onNavigate("exam")}
+          />
           <DashboardEraChart stats={stats} />
           <DashboardMemory
             stats={stats}
@@ -62,6 +67,12 @@ function DashboardPage({ onNavigate }: PageProps) {
               <Rocket size={20} aria-hidden />첫 퀴즈 시작하기
             </Button>
           </GlassCard>
+          {examResults.length > 0 && (
+            <DashboardExamCard
+              examResults={examResults}
+              onGoExam={() => onNavigate("exam")}
+            />
+          )}
           <DashboardTipOfDay tipVotes={tipVotes} now={now} />
         </>
       )}

@@ -12,6 +12,7 @@ export const STORAGE_KEYS = {
   tipVotes: "studyapp:tipVotes",
   timelineBest: "studyapp:timelineBest",
   matchBest: "studyapp:matchBest",
+  examResults: "studyapp:examResults",
 } as const;
 
 /**
@@ -224,4 +225,29 @@ export function saveMatchBest(pairs: number, seconds: number): boolean {
   write(STORAGE_KEYS.matchBest, { ...best, [String(pairs)]: seconds });
   notifyChange();
   return true;
+}
+
+/* ---------- 기출 OMR 응시 기록 (3-4) ---------- */
+
+export interface ExamResult {
+  examId: string;
+  round: number;
+  isSample?: boolean;
+  takenAt: number; // ms 타임스탬프
+  score: number;
+  maxScore: number;
+  grade: string; // "1급" | "2급" | "3급" | "불합격"
+  correctCount: number;
+  answers: number[]; // 문항 순서대로 0(빈칸) 또는 1~5
+  durationSec: number; // 실제로 흐른 시간 (일시정지 제외)
+}
+
+export function getExamResults(): ExamResult[] {
+  const results = read<ExamResult[]>(STORAGE_KEYS.examResults, []);
+  return Array.isArray(results) ? results : [];
+}
+
+export function saveExamResult(result: ExamResult): void {
+  write(STORAGE_KEYS.examResults, [...getExamResults(), result]);
+  notifyChange();
 }
