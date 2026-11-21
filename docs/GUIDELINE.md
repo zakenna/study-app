@@ -25,6 +25,7 @@ README.md(Git 규칙)와 함께 따른다. 내용이 충돌하면 이 문서를 
 | 타임라인 순서 맞추기 | 사건 카드 4~5장을 연도 순으로 드래그해서 정렬 |
 | 인물 ↔ 사건 짝 맞추기 | 카드 뒤집기 방식의 매칭 게임 |
 | 망각곡선 복습 | "지금 이 문제를 기억할 확률 62%" 표시, 약한 문제 우선 출제 |
+| 기출 OMR 채점 | 공식 기출 문제지(링크)를 보며 OMR 50문항 표시 → 배점 반영 채점, 급수 판정, 시대별 정답률 |
 | 꿀팁 모음 | 전체 꿀팁 보기, 👍 "외워졌어요" 토글(꿀팁당 1회), 외운/못 외운 꿀팁 필터 |
 
 ### ⛔ 이번에 하지 않음
@@ -138,6 +139,8 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 | `studyapp:studyLogs` | `StudyLog[]` |
 | `studyapp:tipVotes` | `TipVote[]` |
 | `studyapp:timelineBest` | `number` (타임라인 순서 맞추기 연속 성공 최고 기록) |
+| `studyapp:examResults` | `ExamResult[]` (기출 OMR 회차별 응시 기록: 점수·급수·답안·걸린 시간) |
+| `studyapp:examDraft` (sessionStorage) | 기출 OMR 응시 중 임시 저장 `{ examId, answers, remaining, savedAt }` — 브라우저 탭을 닫으면 사라짐, 제출·그만두기 때 삭제 |
 | `studyapp:matchBest` | `Record<쌍 수, 초>` (인물 매칭 쌍 수별 최단 시간, 예: `{ "4": 21 }`) |
 
 다른 키도 `studyapp:` 접두어를 쓰고, 팀장이 `storage.ts`에서 정의한다.
@@ -156,6 +159,9 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 
 1. **사실 정확성이 최우선.** 연도, 인물, 사건은 교과서와 국사편찬위원회 자료 기준. 확실하지 않으면 넣지 않는다.
 2. **기출문제 원문 복사 금지.** 문제와 보기는 직접 창작한다. 기출 *유형*은 참고 가능.
+   - 기출 OMR 채점(`src/data/exams.ts`)도 같다: 지문·사료·보기·그림은 **절대 저장·표시하지 않는다.**
+     저장하는 것은 회차, 시행일, 문항 번호, 정답 번호, 배점, 우리가 분류한 시대뿐. 문제지는 공식 시험 자료실 링크로만 안내하고,
+     정답·배점은 국사편찬위원회 공식 정답표에서만 옮긴다 (제3자 사이트 금지).
 3. **모든 문제에 해설 필수.** 왜 정답인지, 오답 보기는 무엇인지 한두 줄로.
 4. **꿀팁은 사실과 정확히 연결.** 연도 말장난이면 숫자가 실제 연도와 일치해야 한다.
 5. **표현 주의.** 특정 국가·민족·인물을 비하하거나 혐오하는 표현 금지. 역사적 비극을 가볍게 희화화하지 않는다.
@@ -185,17 +191,20 @@ src/
 │   ├── useStudyData.ts 🔒       저장 데이터 구독 훅 — 화면은 이걸로 읽는다 (3-5)
 │   ├── memory.ts       🔒       망각곡선 계산 (retention, updateStrength, projectRetention)
 │   ├── date.ts         🔒       날짜 키(YYYY-MM-DD), D-day, 연속 학습일
+│   ├── exam.ts         🔒       기출 OMR 채점 엔진 (점수·급수·시대별 정답률)
 │   ├── useCountUp.ts   🔒       숫자가 올라가는 애니메이션 훅 (결과·요약 카드)
 │   ├── labels.ts       🔒       ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS, formatYear, eraColor(시대 색)
 │   └── quiz.ts                   문제 뽑기·채점 로직
 ├── components/ui/      🔒       GlassCard, Button, Badge, ProgressBar, TipCard, OptionButton(4지선다 보기) 등 공용 부품
 ├── data/                         문제·꿀팁(tips.ts)·타임라인·인물 데이터
+│   ├── exams.ts                  기출 회차 정답·배점·시대 분류 (원문 없음)
 │   └── questions/
 │       ├── <era>.ts              시대별 문제
 │       └── index.ts              시대별 문제를 하나로 합침 (새 시대 파일을 만들면 여기에 추가)
 ├── pages/
 │   ├── DashboardPage.tsx
 │   ├── QuizPage.tsx
+│   ├── ExamPage.tsx              기출 OMR 채점 (회차 선택 → OMR → 결과)
 │   ├── WrongNotePage.tsx
 │   ├── TipsPage.tsx
 │   ├── TimelinePage.tsx

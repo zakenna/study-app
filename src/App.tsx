@@ -1,4 +1,5 @@
 import {
+  ClipboardCheck,
   Hourglass,
   LayoutDashboard,
   Lightbulb,
@@ -15,12 +16,13 @@ import { calcStudyStreak, daysUntil } from "./lib/date";
 import { saveProfile } from "./lib/storage";
 import { useStudyData } from "./lib/useStudyData";
 import DashboardPage from "./pages/DashboardPage";
+import ExamPage from "./pages/ExamPage";
 import MatchPage from "./pages/MatchPage";
 import QuizPage from "./pages/QuizPage";
 import TimelinePage from "./pages/TimelinePage";
 import TipsPage from "./pages/TipsPage";
 import WrongNotePage from "./pages/WrongNotePage";
-import type { PageProps, Profile, TabId } from "./types";
+import type { NavIntent, PageProps, Profile, TabId } from "./types";
 
 interface Tab {
   id: TabId;
@@ -37,6 +39,7 @@ const TABS: Tab[] = [
     page: DashboardPage,
   },
   { id: "quiz", label: "퀴즈", icon: ScrollText, page: QuizPage },
+  { id: "exam", label: "기출 채점", icon: ClipboardCheck, page: ExamPage },
   {
     id: "wrong-note",
     label: "오답노트",
@@ -89,14 +92,16 @@ function App() {
   const [unsavedProfile, setUnsavedProfile] = useState<Profile | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [navIntent, setNavIntent] = useState<NavIntent | undefined>(undefined);
 
   const profile = unsavedProfile ?? storedProfile;
   const streak = calcStudyStreak(logs);
   const ActivePage = (TABS.find((tab) => tab.id === activeTab) ?? TABS[0]).page;
   const showOnboarding = profile === null || isEditingProfile;
 
-  const handleNavigate = (tab: TabId) => {
+  const handleNavigate = (tab: TabId, intent?: NavIntent) => {
     setActiveTab(tab);
+    setNavIntent(intent); // 의도 없이 이동하면 지난 의도는 지운다
     window.scrollTo({ top: 0 });
   };
 
@@ -177,14 +182,14 @@ function App() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
             >
-              <ActivePage onNavigate={handleNavigate} />
+              <ActivePage onNavigate={handleNavigate} intent={navIntent} />
             </motion.div>
           </AnimatePresence>
         </main>
       </div>
 
       {/* 모바일 하단 탭 */}
-      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t border-line bg-canvas/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-7 border-t border-line bg-canvas/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
         {TABS.map((tab) => {
           const isActive = tab.id === activeTab;
           return (
