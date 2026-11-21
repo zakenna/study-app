@@ -1,35 +1,92 @@
-import { ListTodo } from "lucide-react";
-import Badge from "../components/ui/Badge";
-import GlassCard from "../components/ui/GlassCard";
+import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
+import { prepareQuiz, shuffle, type QuestionSnapshot } from "../lib/quiz";
+import { getStats, isGraduated } from "../lib/storage";
+import type { PageProps, Question } from "../types";
+import QuizPlay, { type AnswerRecord } from "./QuizPage.Play";
+import QuizResult from "./QuizPage.Result";
+import WrongNoteList from "./WrongNotePage.List";
 
-// 뼈대 단계의 자리 표시용 화면. 아래 TODO를 구현하면서 자유롭게 바꾼다.
-const TODOS = [
-  "오답노트 목록 (getWrongNoteIds: 틀린 적 있고 연속 정답 2회 미만)",
-  "다시 풀기 (2번 연속 맞히면 목록에서 빠짐)",
-  "기억 확률 표시 (lib/memory의 retention)",
-  "약한 문제 우선 복습 (getWeakQuestions)",
-];
+type Phase =
+  | { name: "list" }
+  | {
+      name: "play";
+      quiz: Question[];
+      snapshot: Record<string, QuestionSnapshot>;
+      runId: number;
+    }
+  | {
+      name: "result";
+      answers: AnswerRecord[];
+      maxCombo: number;
+      graduated: number;
+    };
 
-function WrongNotePage() {
+/** 오답노트: 목록 → (다시 풀기) 퀴즈 Play/Result 재사용 */
+function WrongNotePage({ onNavigate }: PageProps) {
+  const [phase, setPhase] = useState<Phase>({ name: "list" });
+
+  const startQuiz = (questions: Question[]) => {
+    if (questions.length === 0) return;
+    const { quiz, snapshot } = prepareQuiz(shuffle(questions), getStats());
+    setPhase({ name: "play", quiz, snapshot, runId: Date.now() });
+    window.scrollTo({ top: 0 });
+  };
+
+  const handleFinish = (answers: AnswerRecord[], maxCombo: number) => {
+    // 이번에 푼 문제는 모두 시작할 때 오답노트에 있던 문제 → 지금 졸업 상태면 이번 풀이로 졸업한 것
+    const stats = getStats();
+    const graduated = answers.filter((a) =>
+      isGraduated(stats[a.question.id]),
+    ).length;
+    setPhase({ name: "result", answers, maxCombo, graduated });
+    window.scrollTo({ top: 0 });
+  };
+
   return (
-    <GlassCard>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xl font-bold">오답노트</h2>
-        <Badge tone="primary">준비 중</Badge>
-      </div>
-      <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-muted">
-        <ListTodo size={16} aria-hidden />
-        TODO
-      </p>
-      <ul className="space-y-2 text-sm text-muted">
-        {TODOS.map((todo) => (
-          <li key={todo} className="flex gap-2">
-            <span aria-hidden>☐</span>
-            <span>{todo}</span>
-          </li>
-        ))}
-      </ul>
-    </GlassCard>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={phase.name === "play" ? `play-${phase.runId}` : phase.name}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.25 }}
+      >
+        {phase.name === "list" && (
+          <WrongNoteList
+            onStart={startQuiz}
+            onGoQuiz={() => onNavigate("quiz")}
+          />
+        )}
+
+        {phase.name === "play" && (
+          <QuizPlay
+            quiz={phase.quiz}
+            snapshot={phase.snapshot}
+            onQuit={() => setPhase({ name: "list" })}
+            onFinish={handleFinish}
+          />
+        )}
+
+        {phase.name === "result" && (
+          <QuizResult
+            answers={phase.answers}
+            maxCombo={phase.maxCombo}
+            graduated={phase.graduated}
+            pickAnotherLabel="오답 목록으로"
+            onRetryWrong={() =>
+              startQuiz(
+                phase.answers
+                  .filter((a) => !a.isCorrect)
+                  .map((a) => a.question),
+              )
+            }
+            onPickAnother={() => setPhase({ name: "list" })}
+            onGoDashboard={() => onNavigate("dashboard")}
+          />
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 

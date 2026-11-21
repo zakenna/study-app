@@ -50,3 +50,18 @@ export function getWeakQuestions(
     .slice(0, Math.max(0, limit))
     .map(({ stat }) => stat);
 }
+
+/**
+ * 지금부터 days일 뒤까지 하루 단위 기억 확률 (망각곡선 그래프용).
+ * 결과의 day 0 = 오늘(지금), percent = 0~100 정수.
+ */
+export function projectRetention(
+  stat: Pick<QuestionStat, "strength" | "lastReviewedAt">,
+  days: number = 7,
+  now: number = Date.now(),
+): { day: number; percent: number }[] {
+  return Array.from({ length: days + 1 }, (_, day) => ({
+    day,
+    percent: Math.round(retention(stat, now + day * DAY_MS) * 100),
+  }));
+}

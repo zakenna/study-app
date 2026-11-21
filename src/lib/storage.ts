@@ -117,6 +117,11 @@ export function isInWrongNote(stat: QuestionStat): boolean {
   return stat.wrong > 0 && stat.correctStreak < 2;
 }
 
+/** 🎓 졸업: 한 번 이상 틀렸고, 이후 2번 연속 맞혀 오답노트에서 빠진 문제 */
+export function isGraduated(stat: QuestionStat | undefined): boolean {
+  return stat !== undefined && stat.wrong > 0 && stat.correctStreak >= 2;
+}
+
 export function getWrongNoteIds(): string[] {
   return Object.values(getStats())
     .filter(isInWrongNote)
