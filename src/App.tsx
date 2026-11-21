@@ -20,16 +20,13 @@ import QuizPage from "./pages/QuizPage";
 import TimelinePage from "./pages/TimelinePage";
 import TipsPage from "./pages/TipsPage";
 import WrongNotePage from "./pages/WrongNotePage";
-import type { Profile } from "./types";
-
-type TabId =
-  "dashboard" | "quiz" | "wrong-note" | "tips" | "timeline" | "match";
+import type { PageProps, Profile, TabId } from "./types";
 
 interface Tab {
   id: TabId;
   label: string;
   icon: LucideIcon;
-  page: ComponentType;
+  page: ComponentType<PageProps>;
 }
 
 const TABS: Tab[] = [
@@ -98,6 +95,11 @@ function App() {
   const ActivePage = (TABS.find((tab) => tab.id === activeTab) ?? TABS[0]).page;
   const showOnboarding = profile === null || isEditingProfile;
 
+  const handleNavigate = (tab: TabId) => {
+    setActiveTab(tab);
+    window.scrollTo({ top: 0 });
+  };
+
   const handleSaveProfile = (next: Profile) => {
     // 저장에 성공하면 "studyapp:change" 이벤트로 useStudyData가 새 프로필을 읽는다
     setUnsavedProfile(saveProfile(next) ? null : next);
@@ -119,7 +121,7 @@ function App() {
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleNavigate(tab.id)}
               aria-current={isActive ? "page" : undefined}
               className={`relative flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm transition ${
                 isActive
@@ -175,7 +177,7 @@ function App() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
             >
-              <ActivePage />
+              <ActivePage onNavigate={handleNavigate} />
             </motion.div>
           </AnimatePresence>
         </main>
@@ -189,7 +191,7 @@ function App() {
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleNavigate(tab.id)}
               aria-current={isActive ? "page" : undefined}
               className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] transition ${
                 isActive ? "font-semibold text-primary" : "text-muted"

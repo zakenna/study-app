@@ -1,4 +1,4 @@
-import { Lightbulb, ThumbsUp } from "lucide-react";
+import { Check, Lightbulb, ThumbsUp } from "lucide-react";
 import { motion } from "motion/react";
 import { ERA_LABELS, formatYear, TIP_KIND_LABELS } from "../../lib/labels";
 import type { Tip } from "../../types";
@@ -6,9 +6,10 @@ import Badge from "./Badge";
 
 interface TipCardProps {
   tip: Tip;
-  /** 👍 "외워졌어요" 수. 넘기지 않으면 버튼을 숨긴다 */
-  votes?: number;
-  onVote?: (tipId: string) => void;
+  /** 👍 "외워졌어요" 상태 (storage의 isTipMemorized) */
+  memorized?: boolean;
+  /** 넘기면 "외워졌어요" 토글 버튼이 생긴다 (storage의 toggleTipMemorized) */
+  onToggleMemorized?: (tipId: string) => void;
   className?: string;
 }
 
@@ -16,7 +17,12 @@ interface TipCardProps {
  * 💡 암기 꿀팁 카드 (퀴즈 오답·해설, 오답노트, 꿀팁 모음에서 공통 사용).
  * 나타날 때 살짝 튀어오르는 애니메이션.
  */
-function TipCard({ tip, votes, onVote, className = "" }: TipCardProps) {
+function TipCard({
+  tip,
+  memorized = false,
+  onToggleMemorized,
+  className = "",
+}: TipCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.94, y: 6 }}
@@ -40,15 +46,32 @@ function TipCard({ tip, votes, onVote, className = "" }: TipCardProps) {
         {tip.text}
       </p>
 
-      {onVote && votes !== undefined && (
+      {onToggleMemorized && (
         <motion.button
           type="button"
+          aria-pressed={memorized}
           whileTap={{ scale: 0.9 }}
-          onClick={() => onVote(tip.id)}
-          className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line px-3 text-xs text-muted transition hover:border-accent/60 hover:text-accent"
+          onClick={() => onToggleMemorized(tip.id)}
+          className={`mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs transition ${
+            memorized
+              ? "border-accent bg-accent/20 font-semibold text-accent"
+              : "border-line text-muted hover:border-accent/60 hover:text-accent"
+          }`}
         >
-          <ThumbsUp size={14} aria-hidden />
-          외워졌어요 {votes}
+          <motion.span
+            key={String(memorized)}
+            initial={memorized ? { scale: 1.6, rotate: -15 } : false}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 500, damping: 14 }}
+            className="inline-flex"
+          >
+            {memorized ? (
+              <Check size={14} aria-hidden />
+            ) : (
+              <ThumbsUp size={14} aria-hidden />
+            )}
+          </motion.span>
+          {memorized ? "외워졌어요!" : "외워졌어요"}
         </motion.button>
       )}
     </motion.div>

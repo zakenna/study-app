@@ -70,5 +70,14 @@ export interface StudyLog {
 
 export interface TipVote {
   tipId: string;
-  count: number; // 👍 "외워졌어요" 수
+  count: number; // "외워졌어요" 토글: 외우면 1로 저장, 취소하면 항목을 지운다
+}
+
+/** 화면(탭) 이름 */
+export type TabId =
+  "dashboard" | "quiz" | "wrong-note" | "tips" | "timeline" | "match";
+
+/** 모든 페이지가 받는 props. 다른 탭으로 이동할 때 onNavigate("dashboard")처럼 쓴다 */
+export interface PageProps {
+  onNavigate: (tab: TabId) => void;
 }
