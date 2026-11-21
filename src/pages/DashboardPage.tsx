@@ -1,35 +1,71 @@
-import { ListTodo } from "lucide-react";
-import Badge from "../components/ui/Badge";
+import { Rocket } from "lucide-react";
+import { useState } from "react";
+import Button from "../components/ui/Button";
 import GlassCard from "../components/ui/GlassCard";
+import { questions as allQuestions } from "../data/questions";
+import { useStudyData } from "../lib/useStudyData";
+import type { PageProps } from "../types";
+import DashboardEraChart from "./DashboardPage.EraChart";
+import DashboardHero from "./DashboardPage.Hero";
+import DashboardMemory from "./DashboardPage.Memory";
+import DashboardStreak from "./DashboardPage.Streak";
+import DashboardTipOfDay from "./DashboardPage.TipOfDay";
 
-// 뼈대 단계의 자리 표시용 화면. 아래 TODO를 구현하면서 자유롭게 바꾼다.
-const TODOS = [
-  "시험 D-day 카드 (Profile.examDate, lib/date의 daysUntil)",
-  "오늘 푼 문제 수 / 하루 목표 (getTodayLog, Profile.dailyGoal, ProgressBar)",
-  "시대별 정답률 차트 (recharts, getStats + 문제의 era)",
-  "🔥 연속 학습일 (getStudyStreak)",
-];
+/** 대시보드 (앱 첫 화면): 히어로 → 학습 기록 → 시대별 정답률 → 기억 상태 → 오늘의 꿀팁 */
+function DashboardPage({ onNavigate }: PageProps) {
+  const { profile, stats, logs, tipVotes } = useStudyData();
+  // 화면을 연 시점 기준으로 계산 (렌더링마다 값이 흔들리지 않게)
+  const [now] = useState(() => Date.now());
 
-function DashboardPage() {
+  const solvedStats = allQuestions.flatMap((q) =>
+    stats[q.id] ? [stats[q.id]] : [],
+  );
+  const hasRecord = solvedStats.length > 0;
+
   return (
-    <GlassCard>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xl font-bold">대시보드</h2>
-        <Badge tone="primary">준비 중</Badge>
-      </div>
-      <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-muted">
-        <ListTodo size={16} aria-hidden />
-        TODO
-      </p>
-      <ul className="space-y-2 text-sm text-muted">
-        {TODOS.map((todo) => (
-          <li key={todo} className="flex gap-2">
-            <span aria-hidden>☐</span>
-            <span>{todo}</span>
-          </li>
-        ))}
-      </ul>
-    </GlassCard>
+    <div className="space-y-4">
+      <DashboardHero profile={profile} logs={logs} now={now} />
+
+      {hasRecord ? (
+        <>
+          <div className="grid gap-4 md:grid-cols-2">
+            <DashboardStreak
+              logs={logs}
+              solvedStats={solvedStats}
+              dailyGoal={profile?.dailyGoal ?? 20}
+              now={now}
+            />
+            <DashboardTipOfDay tipVotes={tipVotes} now={now} />
+          </div>
+          <DashboardEraChart stats={stats} />
+          <DashboardMemory
+            stats={stats}
+            now={now}
+            onGoWrongNote={() => onNavigate("wrong-note")}
+            onGoQuiz={() => onNavigate("quiz")}
+          />
+        </>
+      ) : (
+        <>
+          <GlassCard className="py-8 text-center">
+            <p className="text-4xl" aria-hidden>
+              📜
+            </p>
+            <p className="mt-3 text-lg font-bold">첫 퀴즈를 풀어 보세요</p>
+            <p className="mt-1 text-sm break-keep text-muted">
+              문제를 풀면 학습 기록, 시대별 정답률, 기억 상태가 여기에 쌓여요.
+            </p>
+            <Button
+              className="mt-5 min-h-14 px-8 text-lg"
+              onClick={() => onNavigate("quiz")}
+            >
+              <Rocket size={20} aria-hidden />첫 퀴즈 시작하기
+            </Button>
+          </GlassCard>
+          <DashboardTipOfDay tipVotes={tipVotes} now={now} />
+        </>
+      )}
+    </div>
   );
 }
 
