@@ -3,8 +3,7 @@ import { useState } from "react";
 import {
   buildQuizSet,
   shuffle,
-  shuffleOptions,
-  snapshotQuizState,
+  prepareQuiz,
   type QuestionSnapshot,
   type QuizMode,
 } from "../lib/quiz";
@@ -30,14 +29,12 @@ function QuizPage({ onNavigate }: PageProps) {
 
   const startQuiz = (questions: Question[]) => {
     if (questions.length === 0) return;
-    // 풀 때마다 보기 순서를 섞는다 (위치 암기 방지). 정답 인덱스는 shuffleOptions가 다시 매핑
-    const quiz = questions.map((q) => shuffleOptions(q));
-    // 클릭 처리 안에서 한 번 읽는다 (렌더링 중 읽기 금지 규칙, GUIDELINE 3-5)
-    const stats = getStats();
+    // 보기 섞기 + 시작 상태 고정. stats는 클릭 처리 안에서 한 번 읽는다 (GUIDELINE 3-5)
+    const { quiz, snapshot } = prepareQuiz(questions, getStats());
     setPhase({
       name: "play",
       quiz,
-      snapshot: snapshotQuizState(quiz, stats),
+      snapshot,
       runId: Date.now(),
     });
     window.scrollTo({ top: 0 });

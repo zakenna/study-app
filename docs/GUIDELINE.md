@@ -118,6 +118,7 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 - **한 번이라도 틀렸고(`wrong > 0`) `correctStreak < 2`인 문제**가 오답노트에 들어간다.
 - 정답이면 `correctStreak + 1`, 오답이면 `correctStreak = 0`.
 - **2번 연속 맞히면** 오답노트에서 빠진다. 다시 틀리면 다시 들어온다.
+- 🎓 **졸업** = 한 번 이상 틀렸고 `correctStreak >= 2`인 문제 (`storage.ts`의 `isGraduated`).
 
 ### 3-3. 망각곡선 (`src/lib/memory.ts`)
 - `strength` 초깃값은 **1**(일). 정답이면 **×2.5**, 오답이면 **1로 리셋**.
@@ -177,6 +178,7 @@ src/
 │   ├── useStudyData.ts 🔒       저장 데이터 구독 훅 — 화면은 이걸로 읽는다 (3-5)
 │   ├── memory.ts       🔒       망각곡선 계산 (retention, updateStrength, getWeakQuestions)
 │   ├── date.ts         🔒       날짜 키(YYYY-MM-DD), D-day, 연속 학습일
+│   ├── useCountUp.ts   🔒       숫자가 올라가는 애니메이션 훅 (결과·요약 카드)
 │   ├── labels.ts       🔒       ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS, formatYear
 │   └── quiz.ts                   문제 뽑기·채점 로직
 ├── components/ui/      🔒       GlassCard, Button, Badge, ProgressBar, TipCard 등 공용 부품

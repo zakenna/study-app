@@ -1,6 +1,5 @@
 import { LayoutDashboard, RotateCcw, Shuffle } from "lucide-react";
-import { animate, motion, useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
+import { motion } from "motion/react";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import GlassCard from "../components/ui/GlassCard";
@@ -8,6 +7,7 @@ import TipCard from "../components/ui/TipCard";
 import { getTipById } from "../data/tips";
 import { ERA_LABELS } from "../lib/labels";
 import { isTipMemorized, toggleTipMemorized } from "../lib/storage";
+import { useCountUp } from "../lib/useCountUp";
 import { useStudyData } from "../lib/useStudyData";
 import type { AnswerRecord } from "./QuizPage.Play";
 
@@ -17,28 +17,13 @@ interface QuizResultProps {
   onRetryWrong: () => void;
   onPickAnother: () => void;
   onGoDashboard: () => void;
+  /** 이번 풀이로 오답노트를 졸업한 문제 수 (넘기면 축하 표시) */
+  graduated?: number;
+  /** "다른 시대 풀기" 버튼 문구 (오답노트에서는 "목록으로") */
+  pickAnotherLabel?: string;
 }
 
 const OPTION_MARKS = ["①", "②", "③", "④"];
-
-/** 0에서 target까지 숫자가 올라가는 애니메이션 */
-function useCountUp(target: number, delay = 0): number {
-  const reduceMotion = useReducedMotion() ?? false;
-  const [value, setValue] = useState(reduceMotion ? target : 0);
-
-  useEffect(() => {
-    if (reduceMotion) return;
-    const controls = animate(0, target, {
-      duration: 0.9,
-      delay,
-      ease: "easeOut",
-      onUpdate: (v) => setValue(Math.round(v)),
-    });
-    return () => controls.stop();
-  }, [target, delay, reduceMotion]);
-
-  return reduceMotion ? target : value;
-}
 
 function resultMessage(rate: number): string {
   if (rate === 100) return "완벽해요! 🎉";
@@ -54,6 +39,8 @@ function QuizResult({
   onRetryWrong,
   onPickAnother,
   onGoDashboard,
+  graduated = 0,
+  pickAnotherLabel = "다른 시대 풀기",
 }: QuizResultProps) {
   const { tipVotes } = useStudyData();
   const total = answers.length;
@@ -93,6 +80,39 @@ function QuizResult({
         </div>
       </GlassCard>
 
+      {graduated > 0 && (
+        <motion.div
+          role="status"
+          initial={{ opacity: 0, scale: 0.85, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{
+            type: "spring",
+            bounce: 0.45,
+            duration: 0.6,
+            delay: 0.5,
+          }}
+          className="flex items-center justify-center gap-3 rounded-2xl border border-success/40 bg-success/10 p-4 text-center"
+        >
+          <motion.span
+            aria-hidden
+            className="text-3xl"
+            initial={{ rotate: -20 }}
+            animate={{ rotate: [-20, 15, -8, 0] }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+          >
+            🎓
+          </motion.span>
+          <span>
+            <span className="block text-lg font-bold text-success">
+              {graduated}문제 졸업!
+            </span>
+            <span className="block text-xs text-muted">
+              2번 연속 맞혀서 오답노트에서 빠졌어요
+            </span>
+          </span>
+        </motion.div>
+      )}
+
       <div className="grid gap-2 sm:grid-cols-3">
         <Button onClick={onRetryWrong} disabled={wrong.length === 0}>
           <RotateCcw size={16} aria-hidden />
@@ -100,7 +120,7 @@ function QuizResult({
         </Button>
         <Button variant="ghost" onClick={onPickAnother}>
           <Shuffle size={16} aria-hidden />
-          다른 시대 풀기
+          {pickAnotherLabel}
         </Button>
         <Button variant="ghost" onClick={onGoDashboard}>
           <LayoutDashboard size={16} aria-hidden />

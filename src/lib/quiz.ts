@@ -145,3 +145,13 @@ export function shuffleOptions(
   const answer = order.indexOf(question.answer) as Question["answer"];
   return { ...question, options, answer };
 }
+
+/** 퀴즈 시작 준비: 보기를 섞고, 시작 시점 상태를 고정한다 (퀴즈·오답노트 공통) */
+export function prepareQuiz(
+  questions: Question[],
+  stats: StatMap,
+  now: number = Date.now(),
+): { quiz: Question[]; snapshot: Record<string, QuestionSnapshot> } {
+  const quiz = questions.map((q) => shuffleOptions(q));
+  return { quiz, snapshot: snapshotQuizState(quiz, stats, now) };
+}
