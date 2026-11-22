@@ -33,6 +33,14 @@ export const EXAM_SOURCE_LABEL = "정답 출처: 국사편찬위원회 한국사
 export const EXAM_BOARD_URL =
   "https://www.historyexam.go.kr/pst/list.do?bbs=dat";
 export const EXAM_MINUTES = 80;
+
+/**
+ * 다가오는 시험 (온보딩·프로필의 시험 날짜 빠른 선택 버튼).
+ * 국사편찬위원회 한국사능력검정시험 공식 사이트 배너에서 확인한 시행일만 적는다. 날짜가 지나면 버튼이 숨겨진다.
+ */
+export const UPCOMING_EXAMS: { round: number; date: string }[] = [
+  { round: 81, date: "2026-11-28" },
+];
 export const EXAM_QUESTION_COUNT = 50;
 
 /** 쪽마다 첫 문항 번호 목록 → 문항별 쪽 번호 배열 (index 0 = 1번) */

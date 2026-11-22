@@ -2,7 +2,8 @@ import { X } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useId, useState, type FormEvent } from "react";
 import Button from "./components/ui/Button";
-import { parseDateKey } from "./lib/date";
+import { UPCOMING_EXAMS } from "./data/exams";
+import { parseDateKey, toDateKey } from "./lib/date";
 import type { Profile } from "./types";
 
 interface OnboardingProps {
@@ -33,6 +34,8 @@ function Onboarding({
   onToggleEffects,
 }: OnboardingProps) {
   const titleId = useId();
+  const dateId = useId();
+  const dateHintId = useId();
   const [name, setName] = useState(initialProfile?.name ?? "");
   const [examDate, setExamDate] = useState(initialProfile?.examDate ?? "");
   const [level, setLevel] = useState<Profile["level"]>(
@@ -42,6 +45,10 @@ function Onboarding({
     String(initialProfile?.dailyGoal ?? 20),
   );
   const [error, setError] = useState("");
+  // 시험 날짜는 오늘 이후만 (화면을 연 날 기준)
+  const [todayKey] = useState(() => toDateKey());
+  const examDatePassed = examDate !== "" && examDate < todayKey;
+  const upcoming = UPCOMING_EXAMS.filter((exam) => exam.date >= todayKey);
 
   useEffect(() => {
     if (!onClose) return;
@@ -60,6 +67,7 @@ function Onboarding({
     if (!trimmedName) return setError("이름을 입력해 주세요.");
     if (examDate && !parseDateKey(examDate))
       return setError("시험 날짜 형식이 올바르지 않아요.");
+    if (examDatePassed) return setError("시험 날짜는 오늘 이후로 골라 주세요.");
     if (!Number.isInteger(goal) || goal < 1 || goal > 200)
       return setError("하루 목표는 1~200 사이 숫자로 입력해 주세요.");
 
@@ -84,6 +92,7 @@ function Onboarding({
         aria-modal="true"
         aria-labelledby={titleId}
         onSubmit={handleSubmit}
+        noValidate // 브라우저 기본 말풍선 대신 아래 검증 메시지로 안내
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 24 }}
@@ -124,17 +133,49 @@ function Onboarding({
           />
         </label>
 
-        <label className="block space-y-1.5">
-          <span className="text-sm font-medium">
+        <div className="space-y-1.5">
+          <label htmlFor={dateId} className="block text-sm font-medium">
             시험 날짜 <span className="text-muted">(선택)</span>
-          </span>
-          <input
-            type="date"
-            className={INPUT_CLASS}
-            value={examDate}
-            onChange={(e) => setExamDate(e.target.value)}
-          />
-        </label>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <input
+              id={dateId}
+              type="date"
+              min={todayKey}
+              className={`${INPUT_CLASS} min-w-40 flex-1 basis-40`}
+              value={examDate}
+              onChange={(e) => {
+                setExamDate(e.target.value);
+                setError("");
+              }}
+              aria-invalid={examDatePassed}
+              aria-describedby={examDatePassed ? dateHintId : undefined}
+            />
+            {upcoming.map((exam) => (
+              <button
+                key={exam.round}
+                type="button"
+                aria-pressed={examDate === exam.date}
+                onClick={() => {
+                  setExamDate(exam.date);
+                  setError("");
+                }}
+                className={`min-h-11 shrink-0 rounded-xl border px-3 text-sm transition ${
+                  examDate === exam.date
+                    ? "border-primary bg-primary/15 font-semibold text-primary"
+                    : "border-line bg-surface text-muted hover:text-ink"
+                }`}
+              >
+                제{exam.round}회 ({exam.date})
+              </button>
+            ))}
+          </div>
+          {examDatePassed && (
+            <p id={dateHintId} className="text-xs text-danger">
+              시험일이 지났어요. 다음 시험 날짜를 골라 주세요.
+            </p>
+          )}
+        </div>
 
         <fieldset className="space-y-1.5">
           <legend className="text-sm font-medium">목표 급수</legend>

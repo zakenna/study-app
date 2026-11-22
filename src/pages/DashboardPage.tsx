@@ -13,7 +13,7 @@ import DashboardStreak from "./DashboardPage.Streak";
 import DashboardTipOfDay from "./DashboardPage.TipOfDay";
 
 /** 대시보드 (앱 첫 화면): 히어로 → 학습 기록 → 시대별 정답률 → 기억 상태 → 오늘의 꿀팁 */
-function DashboardPage({ onNavigate }: PageProps) {
+function DashboardPage({ onNavigate, onEditProfile }: PageProps) {
   const { profile, stats, logs, tipVotes, examResults } = useStudyData();
   // 화면을 연 시점 기준으로 계산 (렌더링마다 값이 흔들리지 않게)
   const [now] = useState(() => Date.now());
@@ -25,7 +25,12 @@ function DashboardPage({ onNavigate }: PageProps) {
 
   return (
     <div className="space-y-4">
-      <DashboardHero profile={profile} logs={logs} now={now} />
+      <DashboardHero
+        profile={profile}
+        logs={logs}
+        now={now}
+        onEditProfile={onEditProfile}
+      />
 
       {hasRecord ? (
         <>
