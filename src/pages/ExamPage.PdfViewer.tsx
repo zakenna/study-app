@@ -111,7 +111,10 @@ function PdfViewer({
         setDoc(d);
         setStatus("ready");
       })
-      .catch(() => alive && setStatus("error"));
+      .catch((err) => {
+        console.error("[pdf] 문제지를 열지 못함:", err);
+        if (alive) setStatus("error");
+      });
     return () => {
       alive = false;
     };

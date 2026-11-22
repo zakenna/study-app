@@ -1,14 +1,17 @@
 // 기출 문제지 PDF 열기 (pdf.js). ⚖️ 파일은 이 기기 안에서만 읽고 렌더링한다 — 어디에도 보내지 않는다.
 // pdf.js는 용량이 커서 CBT 화면에 들어갈 때만 불러온다(동적 import).
+// legacy 빌드를 쓴다: 기본 빌드는 아주 최신 브라우저 기능(Map.getOrInsertComputed, Math.sumPrecise 등)을
+// 그대로 써서 조금만 옛 버전인 Chrome·Safari에서도 PDF를 열지 못한다. legacy 빌드는 이런 기능을 보완해 준다.
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { getExamPdf } from "./storage";
 
-let pdfjsPromise: Promise<typeof import("pdfjs-dist")> | null = null;
+type PdfJs = typeof import("pdfjs-dist/legacy/build/pdf.mjs");
+let pdfjsPromise: Promise<PdfJs> | null = null;
 
 function loadPdfjs() {
   pdfjsPromise ??= Promise.all([
-    import("pdfjs-dist"),
-    import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
+    import("pdfjs-dist/legacy/build/pdf.mjs"),
+    import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url"),
   ]).then(([pdfjs, worker]) => {
     pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
     return pdfjs;
@@ -25,7 +28,7 @@ export async function isPdfFile(file: File): Promise<boolean> {
   return String.fromCharCode(...head) === "%PDF-";
 }
 
-type LoadingTask = ReturnType<typeof import("pdfjs-dist").getDocument>;
+type LoadingTask = ReturnType<PdfJs["getDocument"]>;
 
 async function openPdf(data: Blob): Promise<LoadingTask> {
   const pdfjs = await loadPdfjs();
@@ -42,7 +45,9 @@ export async function countPdfPages(file: Blob): Promise<number> {
     } finally {
       void task.destroy();
     }
-  } catch {
+  } catch (err) {
+    // 원인 파악용 (파일 내용은 출력하지 않는다)
+    console.error("[pdf] PDF를 열지 못함:", err);
     return 0;
   }
 }

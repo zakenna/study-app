@@ -110,7 +110,7 @@ function ExamSelect({ onStart }: ExamSelectProps) {
       if (pages === 0) {
         setError(
           exam.id,
-          "PDF를 열 수 없어요. 파일이 손상되지 않았는지 확인해 주세요.",
+          "PDF를 열 수 없어요. 파일이 손상되지 않았는지, 브라우저가 최신 버전인지 확인해 주세요.",
         );
         return;
       }
