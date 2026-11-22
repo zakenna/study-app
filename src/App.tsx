@@ -62,8 +62,8 @@ function Greeting({ profile, streak }: { profile: Profile; streak: number }) {
   let examText = "시험 날짜를 정해 보세요";
   if (dDay !== null) {
     if (dDay > 0) examText = `시험까지 D-${dDay}`;
-    else if (dDay === 0) examText = "오늘이 시험날! D-Day";
-    else examText = "시험이 끝났어요";
+    else if (dDay === 0) examText = "D-Day 🔥 오늘이 시험날!";
+    else examText = "다음 시험 날짜를 정해 보세요"; // 지난 시험일
   }
 
   return (
@@ -209,7 +209,13 @@ function App() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
             >
-              <ActivePage onNavigate={handleNavigate} intent={navIntent} />
+              <ActivePage
+                onNavigate={handleNavigate}
+                intent={navIntent}
+                onEditProfile={
+                  profile ? () => setIsEditingProfile(true) : undefined
+                }
+              />
             </motion.div>
           </AnimatePresence>
         </main>

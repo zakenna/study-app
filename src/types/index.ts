@@ -87,6 +87,8 @@ export interface PageProps {
   onNavigate: (tab: TabId, intent?: NavIntent) => void;
   /** 이 탭으로 올 때 함께 넘어온 의도 (한 번 쓰고 나면 다음 이동 때 사라짐) */
   intent?: NavIntent;
+  /** 프로필 수정 창 열기 (예: 시험일이 지났을 때 "다음 시험 날짜 설정하기") */
+  onEditProfile?: () => void;
 }
 
 /** 🏯 한옥 테마 계절 (기본: 봄) */

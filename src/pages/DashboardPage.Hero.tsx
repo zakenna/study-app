@@ -1,5 +1,7 @@
+import { CalendarClock } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
 import GlassCard from "../components/ui/GlassCard";
 import { daysUntil, toDateKey } from "../lib/date";
 import type { Profile, StudyLog } from "../types";
@@ -8,6 +10,8 @@ interface DashboardHeroProps {
   profile: Profile | null;
   logs: StudyLog[];
   now: number;
+  /** 프로필 수정 창 열기 (시험일이 지났을 때 버튼) */
+  onEditProfile?: () => void;
 }
 
 const LEVEL_LABELS: Record<Profile["level"], string> = {
@@ -16,7 +20,12 @@ const LEVEL_LABELS: Record<Profile["level"], string> = {
 };
 
 /** 히어로: 인사 + 시험 D-day + 목표 급수 + 오늘 목표 링 */
-function DashboardHero({ profile, logs, now }: DashboardHeroProps) {
+function DashboardHero({
+  profile,
+  logs,
+  now,
+  onEditProfile,
+}: DashboardHeroProps) {
   const todayKey = toDateKey(new Date(now));
   const solvedToday = logs.find((log) => log.date === todayKey)?.solved ?? 0;
   const goal = profile?.dailyGoal ?? 20;
@@ -32,12 +41,14 @@ function DashboardHero({ profile, logs, now }: DashboardHeroProps) {
       dDayCaption = `시험까지 ${dDay}일`;
     } else if (dDay === 0) {
       dDayText = "D-Day";
-      dDayCaption = "오늘이 시험날! 화이팅";
+      dDayCaption = "🔥 오늘이 시험날!";
     } else {
-      dDayText = "완료";
-      dDayCaption = "시험이 끝났어요. 수고했어요!";
+      // 지난 날짜를 "완료"로 보여 주면 공부를 마친 것처럼 오해할 수 있어서 다음 시험 날짜를 정하게 안내한다
+      dDayText = "시험일이 지났어요";
+      dDayCaption = `저장된 시험일: ${profile?.examDate}`;
     }
   }
+  const examPassed = dDay !== null && dDay < 0;
 
   return (
     <GlassCard className="overflow-hidden">
@@ -57,11 +68,19 @@ function DashboardHero({ profile, logs, now }: DashboardHeroProps) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="text-5xl font-black tracking-tight text-primary tabular-nums sm:text-6xl"
+            className={`font-black tracking-tight text-primary tabular-nums ${
+              examPassed ? "text-2xl sm:text-3xl" : "text-5xl sm:text-6xl"
+            }`}
           >
             {dDayText}
           </motion.p>
           <p className="mt-1 text-sm text-muted">{dDayCaption}</p>
+          {examPassed && onEditProfile && (
+            <Button className="mt-3" onClick={onEditProfile}>
+              <CalendarClock size={16} aria-hidden />
+              다음 시험 날짜 설정하기
+            </Button>
+          )}
         </div>
         <GoalRing solved={solvedToday} goal={goal} />
       </div>
