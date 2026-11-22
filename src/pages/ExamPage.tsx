@@ -6,15 +6,16 @@ import { clearExamDraft, getExamResults, saveExamResult } from "../lib/storage";
 import type { PageProps } from "../types";
 import ExamResultView from "./ExamPage.Result";
 import ExamSelect from "./ExamPage.Select";
-import ExamSheet from "./ExamPage.Sheet";
+import ExamSheet, { type ExamMode, type ExamResume } from "./ExamPage.Sheet";
 
 type Phase =
   | { name: "select" }
   | {
       name: "sheet";
       exam: Exam;
+      mode: ExamMode;
       runId: number;
-      resume?: { answers: ExamAnswers; remaining: number };
+      resume?: ExamResume;
     }
   | {
       name: "result";
@@ -25,16 +26,13 @@ type Phase =
       isBest: boolean;
     };
 
-/** 🎯 기출 OMR 채점: 회차 선택 → OMR 응시(80분) → 결과·시대별 분석 */
+/** 🎯 기출 채점: 회차 선택(PDF 불러오기) → CBT 또는 OMR 응시(80분) → 결과·시대별 분석·문제지 복습 */
 function ExamPage({ onNavigate }: PageProps) {
   const [phase, setPhase] = useState<Phase>({ name: "select" });
 
-  const start = (
-    exam: Exam,
-    resume?: { answers: ExamAnswers; remaining: number },
-  ) => {
+  const start = (exam: Exam, mode: ExamMode, resume?: ExamResume) => {
     if (!resume) clearExamDraft(); // 새로 시작이면 지난 임시 저장을 지운다
-    setPhase({ name: "sheet", exam, runId: Date.now(), resume });
+    setPhase({ name: "sheet", exam, mode, runId: Date.now(), resume });
     window.scrollTo({ top: 0 });
   };
 
@@ -84,6 +82,7 @@ function ExamPage({ onNavigate }: PageProps) {
         {phase.name === "sheet" && (
           <ExamSheet
             exam={phase.exam}
+            mode={phase.mode}
             resume={phase.resume}
             onSubmit={(answers, durationSec) =>
               submit(phase.exam, answers, durationSec)
@@ -101,7 +100,7 @@ function ExamPage({ onNavigate }: PageProps) {
             durationSec={phase.durationSec}
             result={phase.result}
             isBest={phase.isBest}
-            onRetry={() => start(phase.exam)}
+            onRetry={(mode) => start(phase.exam, mode)}
             onBack={() => setPhase({ name: "select" })}
             onGoQuiz={(era) => onNavigate("quiz", { quizEra: era })}
           />

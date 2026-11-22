@@ -272,6 +272,7 @@ export interface ExamDraft {
   answers: number[]; // 문항 순서대로 0(빈칸) 또는 1~5
   remaining: number; // 남은 시간(초)
   savedAt: number; // ms 타임스탬프
+  flagged?: number[]; // 🚩 다시 보기 표시한 문항 번호
 }
 
 export function getExamDraft(): ExamDraft | null {
@@ -303,6 +304,118 @@ export function clearExamDraft(): void {
   } catch {
     // 무시
   }
+}
+
+/* ---------- 기출 문제지 PDF (IndexedDB, 3-4) ---------- */
+// 사용자가 공식 자료실에서 받은 PDF를 "이 기기 안에만" 회차별로 보관한다. 서버로 보내지 않는다.
+// localStorage는 용량이 작아(약 5MB) 문제지(약 18MB)를 담을 수 없어서 IndexedDB를 쓴다.
+
+export const EXAM_PDF_DB = {
+  name: "studyapp",
+  version: 1,
+  store: "examPdfs", // key: examId ("advanced-80")
+} as const;
+
+export interface StoredExamPdf {
+  examId: string;
+  fileName: string;
+  size: number; // byte
+  savedAt: number; // ms 타임스탬프
+  data: Blob;
+}
+
+/** 저장된 PDF 정보 (파일 내용 제외) */
+export type ExamPdfInfo = Omit<StoredExamPdf, "data">;
+
+function openPdfDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(EXAM_PDF_DB.name, EXAM_PDF_DB.version);
+    req.onupgradeneeded = () => {
+      if (!req.result.objectStoreNames.contains(EXAM_PDF_DB.store)) {
+        req.result.createObjectStore(EXAM_PDF_DB.store, { keyPath: "examId" });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function withPdfStore<T>(
+  mode: IDBTransactionMode,
+  run: (store: IDBObjectStore) => IDBRequest<T>,
+): Promise<T> {
+  const db = await openPdfDb();
+  try {
+    return await new Promise<T>((resolve, reject) => {
+      const tx = db.transaction(EXAM_PDF_DB.store, mode);
+      const req = run(tx.objectStore(EXAM_PDF_DB.store));
+      tx.oncomplete = () => resolve(req.result);
+      tx.onerror = () => reject(tx.error ?? req.error);
+      tx.onabort = () => reject(tx.error ?? req.error);
+    });
+  } finally {
+    db.close();
+  }
+}
+
+export async function getExamPdf(
+  examId: string,
+): Promise<StoredExamPdf | null> {
+  try {
+    const row = await withPdfStore<StoredExamPdf | undefined>("readonly", (s) =>
+      s.get(examId),
+    );
+    return row && row.data instanceof Blob ? row : null;
+  } catch {
+    return null;
+  }
+}
+
+/** 저장된 PDF 목록 (내용 없이 정보만) */
+export async function listExamPdfs(): Promise<ExamPdfInfo[]> {
+  try {
+    const rows = await withPdfStore<StoredExamPdf[]>("readonly", (s) =>
+      s.getAll(),
+    );
+    return rows.map(({ examId, fileName, size, savedAt }) => ({
+      examId,
+      fileName,
+      size,
+      savedAt,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** 저장에 실패하면(저장 공간 부족, 시크릿 모드 등) false */
+export async function saveExamPdf(
+  examId: string,
+  file: File,
+): Promise<boolean> {
+  try {
+    const row: StoredExamPdf = {
+      examId,
+      fileName: file.name,
+      size: file.size,
+      savedAt: Date.now(),
+      data: file,
+    };
+    await withPdfStore("readwrite", (s) => s.put(row));
+    notifyChange();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function deleteExamPdf(examId: string): Promise<void> {
+  try {
+    await withPdfStore("readwrite", (s) => s.delete(examId));
+  } catch {
+    // 무시
+  }
+  notifyChange();
 }
 
 /* ---------- 🏯 계절 테마 (3-4) ---------- */
