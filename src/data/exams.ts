@@ -21,6 +21,11 @@ export interface Exam {
   level: "advanced"; // 심화
   questions: ExamQuestion[]; // 50문항, 배점 합계 100
   isSample?: boolean; // 개발 확인용 가짜 회차 표시 (지금은 쓰지 않음)
+  /**
+   * CBT 응시용: 문항 번호 → 공식 문제지 PDF의 페이지 번호 (index 0 = 1번 문항).
+   * 사실 정보(쪽수)만 적는다. 문제지 원문·이미지는 저장하지 않는다.
+   */
+  questionPages?: number[];
 }
 
 export const EXAM_SOURCE_LABEL = "정답 출처: 국사편찬위원회 한국사능력검정시험";
@@ -29,6 +34,14 @@ export const EXAM_BOARD_URL =
   "https://www.historyexam.go.kr/pst/list.do?bbs=dat";
 export const EXAM_MINUTES = 80;
 export const EXAM_QUESTION_COUNT = 50;
+
+/** 쪽마다 첫 문항 번호 목록 → 문항별 쪽 번호 배열 (index 0 = 1번) */
+function pagesFromStarts(starts: number[]): number[] {
+  return Array.from(
+    { length: EXAM_QUESTION_COUNT },
+    (_, i) => starts.filter((first) => first <= i + 1).length,
+  );
+}
 
 /**
  * 공식 회차 (최신 회차가 앞).
@@ -43,6 +56,10 @@ export const exams: Exam[] = [
     round: 80,
     postedAt: "2026-10-17",
     level: "advanced",
+    // 문제지 12쪽: 1~4 / 5~9 / 10~13 / 14~17 / 18~21 / 22~26 / 27~30 / 31~34 / 35~38 / 39~42 / 43~46 / 47~50
+    questionPages: pagesFromStarts([
+      1, 5, 10, 14, 18, 22, 27, 31, 35, 39, 43, 47,
+    ]),
     questions: [
       { no: 1, answer: 1, points: 1, era: "prehistoric" },
       { no: 2, answer: 2, points: 2, era: "three-kingdoms" },
@@ -101,6 +118,10 @@ export const exams: Exam[] = [
     round: 79,
     postedAt: "2026-08-09",
     level: "advanced",
+    // 문제지 12쪽: 1~4 / 5~9 / 10~13 / 14~17 / 18~21 / 22~25 / 26~29 / 30~34 / 35~38 / 39~42 / 43~46 / 47~50
+    questionPages: pagesFromStarts([
+      1, 5, 10, 14, 18, 22, 26, 30, 35, 39, 43, 47,
+    ]),
     questions: [
       { no: 1, answer: 2, points: 1, era: "prehistoric" },
       { no: 2, answer: 4, points: 1, era: "three-kingdoms" },
@@ -159,6 +180,10 @@ export const exams: Exam[] = [
     round: 78,
     postedAt: "2026-05-23",
     level: "advanced",
+    // 문제지 12쪽: 1~4 / 5~8 / 9~12 / 13~16 / 17~20 / 21~25 / 26~29 / 30~34 / 35~38 / 39~42 / 43~46 / 47~50
+    questionPages: pagesFromStarts([
+      1, 5, 9, 13, 17, 21, 26, 30, 35, 39, 43, 47,
+    ]),
     questions: [
       { no: 1, answer: 5, points: 1, era: "prehistoric" },
       { no: 2, answer: 2, points: 3, era: "prehistoric" },

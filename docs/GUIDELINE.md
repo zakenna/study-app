@@ -26,6 +26,7 @@ README.md(Git 규칙)와 함께 따른다. 내용이 충돌하면 이 문서를 
 | 인물 ↔ 사건 짝 맞추기 | 카드 뒤집기 방식의 매칭 게임 |
 | 망각곡선 복습 | "지금 이 문제를 기억할 확률 62%" 표시, 약한 문제 우선 출제 |
 | 기출 OMR 채점 | 공식 기출 문제지(링크)를 보며 OMR 50문항 표시 → 배점 반영 채점, 급수 판정, 시대별 정답률 |
+| 기출 CBT 응시 | 사용자가 공식 사이트에서 받은 문제지 PDF를 **기기 안에서만** 불러와 한 화면에서 보며 응시 (문항 번호판·🚩 다시 보기·키보드), 결과에서 문항을 누르면 그 쪽으로 복습 |
 | 꿀팁 모음 | 전체 꿀팁 보기, 👍 "외워졌어요" 토글(꿀팁당 1회), 외운/못 외운 꿀팁 필터 |
 
 ### ⛔ 이번에 하지 않음
@@ -37,8 +38,8 @@ README.md(Git 규칙)와 함께 따른다. 내용이 충돌하면 이 문서를 
 
 - React + TypeScript + Vite
 - 스타일: Tailwind CSS v4 (색상은 **테마 변수로만** 사용, 아래 6장 참고)
-- 애니메이션 `motion`, 아이콘 `lucide-react`, 차트 `recharts`
-- 저장: **localStorage만** (모든 접근은 `src/lib/storage.ts`를 통해서)
+- 애니메이션 `motion`, 아이콘 `lucide-react`, 차트 `recharts`, 문제지 PDF 렌더링 `pdfjs-dist` (`lib/pdf.ts`에서 CBT 화면에 들어갈 때만 동적 import)
+- 저장: **localStorage** (모든 접근은 `src/lib/storage.ts`를 통해서). 예외: 문제지 PDF처럼 큰 파일은 같은 파일의 IndexedDB 함수로만 (3-4)
 - 화면 전환: 라우터 없이 `App.tsx`의 탭 상태로
 - 배포: Vercel 무료 플랜
 - **비용 0원.** 결제나 API 키가 필요한 것은 쓰지 않는다
@@ -140,7 +141,8 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
 | `studyapp:tipVotes` | `TipVote[]` |
 | `studyapp:timelineBest` | `number` (타임라인 순서 맞추기 연속 성공 최고 기록) |
 | `studyapp:examResults` | `ExamResult[]` (기출 OMR 회차별 응시 기록: 점수·급수·답안·걸린 시간) |
-| `studyapp:examDraft` (sessionStorage) | 기출 OMR 응시 중 임시 저장 `{ examId, answers, remaining, savedAt }` — 브라우저 탭을 닫으면 사라짐, 제출·그만두기 때 삭제 |
+| `studyapp:examDraft` (sessionStorage) | 기출 OMR·CBT 응시 중 임시 저장 `{ examId, answers, remaining, flagged?, savedAt }` (`flagged`: 🚩 다시 보기 문항 번호) — 브라우저 탭을 닫으면 사라짐, 제출·그만두기 때 삭제 |
+| IndexedDB `studyapp` / 저장소 `examPdfs` | 회차별 문제지 PDF `{ examId, fileName, size, savedAt, data: Blob }` (key `examId`) — **이 기기에만** 보관, 서버 전송 없음, 회차 화면의 "저장된 PDF 삭제"로 지움. `storage.ts`의 `getExamPdf`·`listExamPdfs`·`saveExamPdf`·`deleteExamPdf`로만 접근 |
 | `studyapp:season` | `"spring" | "summer" | "autumn" | "winter"` (🏯 계절 테마, 기본 봄) |
 | `studyapp:effectsOff` | `boolean` (⚙️ 배경 효과 끄기, 기본 false) |
 | `studyapp:matchBest` | `Record<쌍 수, 초>` (인물 매칭 쌍 수별 최단 시간, 예: `{ "4": 21 }`) |
@@ -164,6 +166,9 @@ export interface TipVote  { tipId: string; count: number } // "외워졌어요" 
    - 기출 OMR 채점(`src/data/exams.ts`)도 같다: 지문·사료·보기·그림은 **절대 저장·표시하지 않는다.**
      저장하는 것은 회차, 시행일, 문항 번호, 정답 번호, 배점, 우리가 분류한 시대뿐. 문제지는 공식 시험 자료실 링크로만 안내하고,
      정답·배점은 국사편찬위원회 공식 정답표에서만 옮긴다 (제3자 사이트 금지).
+   - **기출 CBT(문제지 PDF 불러오기)**: 사용자가 공식 사이트에서 받은 PDF를 **사용자 기기 안에서만** 열고 렌더링한다. 서버 업로드·외부 전송 절대 금지.
+     저장소·배포물에 문제지 원문·이미지·PDF를 넣지 않는다 (테스트도 로컬 PDF로만). `exams.ts`에는 문항 번호 → 쪽 번호(`questionPages`)만 적는다.
+     화면에 "파일은 이 기기 안에서만 열리며 어디에도 업로드되지 않아요" 안내를 둔다.
    - 기출 문항의 시대 분류 기준: **문제가 묻는 자료의 시기**로 나눈다. 기구·제도는 **설치·시행 시기**를 따른다. 여러 시대에 걸친 비교·지역사는 `integrated`.
 3. **모든 문제에 해설 필수.** 왜 정답인지, 오답 보기는 무엇인지 한두 줄로.
 4. **꿀팁은 사실과 정확히 연결.** 연도 말장난이면 숫자가 실제 연도와 일치해야 한다.
@@ -195,6 +200,7 @@ src/
 │   ├── memory.ts       🔒       망각곡선 계산 (retention, updateStrength, projectRetention)
 │   ├── date.ts         🔒       날짜 키(YYYY-MM-DD), D-day, 연속 학습일
 │   ├── exam.ts         🔒       기출 OMR 채점 엔진 (점수·급수·시대별 정답률)
+│   ├── pdf.ts                    문제지 PDF 열기 (pdf.js 동적 로드·worker 설정·.pdf 검증·회차별 문서 캐시)
 │   ├── useCountUp.ts   🔒       숫자가 올라가는 애니메이션 훅 (결과·요약 카드)
 │   ├── labels.ts       🔒       ERAS(시대 순서), ERA_LABELS, TIP_KIND_LABELS, formatYear, eraColor(시대 색)
 │   └── quiz.ts                   문제 뽑기·채점 로직
@@ -207,7 +213,9 @@ src/
 ├── pages/
 │   ├── DashboardPage.tsx
 │   ├── QuizPage.tsx
-│   ├── ExamPage.tsx              기출 OMR 채점 (회차 선택 → OMR → 결과)
+│   ├── ExamPage.tsx              기출 채점 (회차 선택·PDF 불러오기 → CBT 또는 OMR → 결과·복습)
+│   ├── ExamPage.Cbt.tsx          CBT 응시 화면 (문제지 60% | 답안 40%, 모바일 탭·스와이프·미니 답안 바)
+│   ├── ExamPage.PdfViewer.tsx    문제지 뷰어 (보이는 쪽만 렌더링·확대·너비 맞춤·핀치 줌)
 │   ├── WrongNotePage.tsx
 │   ├── TipsPage.tsx
 │   ├── TimelinePage.tsx
